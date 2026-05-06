@@ -1,0 +1,55 @@
+export default function Hero() {
+  return (
+    <section
+      id="hero"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+    >
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_#1a1400_0%,_#0a0a0a_70%)]" />
+
+      <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
+        <p className="text-gold text-sm font-bold tracking-widest uppercase mb-4">
+          Mobile Auto Detailing
+        </p>
+        <h1 className="text-5xl md:text-7xl font-black leading-tight mb-6">
+          Your Car Deserves{" "}
+          <span className="text-gold">The Best.</span>
+        </h1>
+        <p className="text-white/60 text-lg md:text-xl max-w-2xl mx-auto mb-10">
+          PrimeLabs brings professional-grade detailing straight to your
+          driveway. No drop-offs, no waiting — just a showroom finish at your
+          door.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <a
+            href="#booking"
+            className="bg-gold text-black font-bold px-8 py-4 rounded text-base hover:bg-gold-light transition-colors duration-200"
+          >
+            Book Your Detail
+          </a>
+          <a
+            href="#services"
+            className="border border-white/20 text-white font-semibold px-8 py-4 rounded text-base hover:border-gold/50 hover:text-gold transition-colors duration-200"
+          >
+            See Services
+          </a>
+        </div>
+      </div>
+
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+        <svg
+          className="w-5 h-5 text-white/30"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </div>
+    </section>
+  );
+}
