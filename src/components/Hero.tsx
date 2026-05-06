@@ -4,7 +4,8 @@ export default function Hero() {
       id="hero"
       className="relative min-h-screen flex items-center justify-center overflow-hidden"
     >
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_#1a1400_0%,_#0a0a0a_70%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_#0a1628_0%,_#050a14_70%)]" />
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-gold/5 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
         <p className="text-gold text-sm font-bold tracking-widest uppercase mb-4">
@@ -12,7 +13,9 @@ export default function Hero() {
         </p>
         <h1 className="text-5xl md:text-7xl font-black leading-tight mb-6">
           Your Car Deserves{" "}
-          <span className="text-gold">The Best.</span>
+          <span className="bg-gradient-to-r from-[#00D4FF] to-[#40E0FF] bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(0,212,255,0.4)]">
+            The Best.
+          </span>
         </h1>
         <p className="text-white/60 text-lg md:text-xl max-w-2xl mx-auto mb-10">
           PrimeLabs brings professional-grade detailing straight to your
@@ -22,7 +25,7 @@ export default function Hero() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <a
             href="#booking"
-            className="bg-gold text-black font-bold px-8 py-4 rounded text-base hover:bg-gold-light transition-colors duration-200"
+            className="bg-gold text-black font-bold px-8 py-4 rounded text-base hover:bg-gold-light transition-all duration-200 shadow-[0_0_24px_rgba(0,212,255,0.35)] hover:shadow-[0_0_36px_rgba(0,212,255,0.55)]"
           >
             Book Your Detail
           </a>

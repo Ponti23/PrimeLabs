@@ -1,10 +1,10 @@
 const placeholders = [
   { label: "Before", bg: "bg-surface-2" },
-  { label: "After", bg: "bg-[#1a1500]" },
+  { label: "After", bg: "bg-[#081520]" },
   { label: "Before", bg: "bg-surface-2" },
-  { label: "After", bg: "bg-[#1a1500]" },
+  { label: "After", bg: "bg-[#081520]" },
   { label: "Before", bg: "bg-surface-2" },
-  { label: "After", bg: "bg-[#1a1500]" },
+  { label: "After", bg: "bg-[#081520]" },
 ];
 
 export default function Gallery() {

@@ -5,7 +5,7 @@ export default function Footer() {
         <div className="grid md:grid-cols-3 gap-12 mb-12">
           <div>
             <div className="text-xl font-black tracking-tight mb-3">
-              PRIME<span className="text-gold">LABS</span>
+              PRIME<span className="text-gold drop-shadow-[0_0_8px_rgba(0,212,255,0.7)]">LABS</span>
             </div>
             <p className="text-white/40 text-sm leading-relaxed">
               Mobile auto detailing that comes to you. Premium results,

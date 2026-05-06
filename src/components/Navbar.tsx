@@ -17,7 +17,7 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-dark/90 backdrop-blur border-b border-white/5">
       <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-16">
         <Link href="/" className="text-xl font-black tracking-tight">
-          PRIME<span className="text-gold">LABS</span>
+          PRIME<span className="text-gold drop-shadow-[0_0_8px_rgba(0,212,255,0.7)]">LABS</span>
         </Link>
 
         <ul className="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">

@@ -1,7 +1,57 @@
+'use client';
+
+import { useEffect } from 'react';
+
 export default function Booking() {
+  useEffect(() => {
+    // Cal.com queue-based init — must run before embed.js loads
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (function (C: any, A: string, L: string) {
+      const p = (a: any, ar: any) => a.q.push(ar);
+      const d = C.document;
+      C.Cal = C.Cal || function (...args: any[]) {
+        const cal = C.Cal;
+        if (!cal.loaded) {
+          cal.ns = {};
+          cal.q = cal.q || [];
+          d.head.appendChild(d.createElement('script')).src = A;
+          cal.loaded = true;
+        }
+        if (args[0] === L) {
+          const api: any = (...a: any[]) => p(api, a);
+          const ns = args[1];
+          api.q = [];
+          if (typeof ns === 'string') {
+            cal.ns[ns] = cal.ns[ns] || api;
+            p(cal.ns[ns], args);
+            p(cal, ['-', api]);
+          } else {
+            p(cal, args);
+          }
+          return;
+        }
+        p(cal, args);
+      };
+    })(window, 'https://app.cal.com/embed/embed.js', 'init');
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const Cal = (window as any).Cal;
+    Cal('init', { origin: 'https://cal.com' });
+    Cal('inline', {
+      elementOrSelector: '#cal-inline',
+      calLink: 'Ponti23',
+      layout: 'month_view',
+    });
+    Cal('ui', {
+      styles: { branding: { brandColor: '#00D4FF' } },
+      hideEventTypeDetails: false,
+      layout: 'month_view',
+    });
+  }, []);
+
   return (
     <section id="booking" className="py-24 px-6 bg-surface">
-      <div className="max-w-3xl mx-auto text-center">
+      <div className="max-w-4xl mx-auto text-center">
         <p className="text-gold text-sm font-bold tracking-widest uppercase mb-3">
           Schedule Online
         </p>
@@ -13,29 +63,19 @@ export default function Booking() {
           up ready to work.
         </p>
 
-        <div className="bg-surface-2 border border-white/5 rounded-2xl p-8 md:p-12">
-          <div className="text-white/30 text-sm mb-6">
-            Cal.com booking widget will appear here
-          </div>
-          <div className="bg-dark/60 border border-white/5 rounded-xl h-64 flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-4xl mb-3">📅</div>
-              <p className="text-white/40 text-sm">
-                Booking calendar coming soon
-              </p>
-              <p className="text-white/20 text-xs mt-1">
-                Powered by Cal.com
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-8 pt-6 border-t border-white/5 text-sm text-white/40 text-center">
-            Prefer to call?{" "}
-            <a href="#contact" className="text-gold hover:text-gold-light transition-colors">
-              Get in touch directly
-            </a>
-          </div>
+        <div className="bg-surface-2 border border-white/5 rounded-2xl overflow-hidden">
+          <div
+            id="cal-inline"
+            style={{ width: '100%', minHeight: '600px', overflow: 'scroll' }}
+          />
         </div>
+
+        <p className="mt-6 text-sm text-white/40">
+          Prefer to call?{' '}
+          <a href="#contact" className="text-gold hover:text-gold-light transition-colors">
+            Get in touch directly
+          </a>
+        </p>
       </div>
     </section>
   );

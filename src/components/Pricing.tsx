@@ -63,7 +63,7 @@ export default function Pricing() {
               key={pkg.name}
               className={`relative rounded-2xl p-8 border transition-all duration-300 ${
                 pkg.highlight
-                  ? "bg-gold/5 border-gold/50 shadow-[0_0_40px_rgba(201,168,76,0.08)]"
+                  ? "bg-gold/5 border-gold/40 shadow-[0_0_60px_rgba(0,212,255,0.12)]"
                   : "bg-surface-2 border-white/5 hover:border-white/10"
               }`}
             >
@@ -77,7 +77,7 @@ export default function Pricing() {
 
               <div className="mb-6">
                 <h3
-                  className={`text-lg font-bold mb-1 ${pkg.highlight ? "text-gold" : "text-white"}`}
+                  className={`text-lg font-bold mb-1 ${pkg.highlight ? "bg-gradient-to-r from-[#00D4FF] to-[#40E0FF] bg-clip-text text-transparent" : "text-white"}`}
                 >
                   {pkg.name}
                 </h3>
@@ -114,7 +114,7 @@ export default function Pricing() {
                 href="#booking"
                 className={`block text-center font-bold py-3 rounded transition-colors duration-200 ${
                   pkg.highlight
-                    ? "bg-gold text-black hover:bg-gold-light"
+                    ? "bg-gold text-black hover:bg-gold-light shadow-[0_0_20px_rgba(0,212,255,0.35)] hover:shadow-[0_0_30px_rgba(0,212,255,0.55)]"
                     : "border border-white/20 text-white hover:border-gold/50 hover:text-gold"
                 }`}
               >

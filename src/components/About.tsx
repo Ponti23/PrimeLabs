@@ -15,7 +15,7 @@ export default function About() {
             </p>
             <h2 className="text-4xl md:text-5xl font-black mb-6">
               Passion for the{" "}
-              <span className="text-gold">Perfect Finish</span>
+              <span className="bg-gradient-to-r from-[#00D4FF] to-[#40E0FF] bg-clip-text text-transparent">Perfect Finish</span>
             </h2>
             <p className="text-white/60 leading-relaxed mb-4">
               PrimeLabs started with a simple idea: every car deserves
@@ -41,7 +41,7 @@ export default function About() {
                 key={s.label}
                 className="bg-surface-2 border border-white/5 rounded-2xl p-6 text-center"
               >
-                <div className="text-3xl font-black text-gold mb-1">
+                <div className="text-3xl font-black bg-gradient-to-r from-[#00D4FF] to-[#40E0FF] bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(0,212,255,0.4)] mb-1">
                   {s.value}
                 </div>
                 <div className="text-xs text-white/50 font-medium">{s.label}</div>
