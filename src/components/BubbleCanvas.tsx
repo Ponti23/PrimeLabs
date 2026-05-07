@@ -49,6 +49,7 @@ export default function BubbleCanvas({ config: propConfig, onConfigChange }: Bub
   const configRef = useRef<Config>({ ...DEFAULT_CONFIG, ...propConfig });
   const animationFrameRef = useRef<number | undefined>(undefined);
   const tintDivRef = useRef<HTMLDivElement>(null);
+  const mouseRef = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     if (propConfig) {
@@ -85,6 +86,11 @@ export default function BubbleCanvas({ config: propConfig, onConfigChange }: Bub
     }
 
     console.log('BubbleCanvas initialized, context ready');
+
+    const onMouseMove = (e: MouseEvent) => { mouseRef.current = { x: e.clientX, y: e.clientY }; };
+    const onMouseLeave = () => { mouseRef.current = null; };
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
+    window.addEventListener('mouseleave', onMouseLeave);
 
     window.addEventListener('resize', resizeCanvas);
 
@@ -128,6 +134,20 @@ export default function BubbleCanvas({ config: propConfig, onConfigChange }: Bub
         bubble.time += 0.016;
         bubble.worldY += bubble.velocityY;
 
+        // Mouse proximity repel
+        if (mouseRef.current) {
+          const screenY = bubble.worldY - smoothScrollRef.current * configRef.current.parallax * bubble.depth;
+          const dx = bubble.x - mouseRef.current.x;
+          const dy = screenY - mouseRef.current.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const repelRadius = bubble.radius * 4 + 80;
+          if (dist < repelRadius && dist > 0) {
+            const force = (1 - dist / repelRadius) * 1.2;
+            bubble.x += (dx / dist) * force * 1.5;
+            bubble.worldY += (dy / dist) * force * 1.5;
+          }
+        }
+
         const wrapHeight = canvas.height * 3;
         if (bubble.worldY > scrollRef.current + wrapHeight) {
           bubble.worldY = scrollRef.current - bubble.radius;
@@ -157,8 +177,8 @@ export default function BubbleCanvas({ config: propConfig, onConfigChange }: Bub
             finalY,
             bubble.radius
           );
-          gradient.addColorStop(0, `rgba(255, 255, 255, ${0.6 * (1 - bubble.depth * 0.3)})`);
-          gradient.addColorStop(0.6, `rgba(${rgbStr}, ${0.3 * (1 - bubble.depth * 0.2)})`);
+          gradient.addColorStop(0, `rgba(255, 255, 255, ${0.12 * (1 - bubble.depth * 0.3)})`);
+          gradient.addColorStop(0.5, `rgba(${rgbStr}, ${0.06 * (1 - bubble.depth * 0.2)})`);
           gradient.addColorStop(1, `rgba(${rgbStr}, 0)`);
 
           ctx.fillStyle = gradient;
@@ -166,28 +186,47 @@ export default function BubbleCanvas({ config: propConfig, onConfigChange }: Bub
           ctx.arc(finalX, finalY, bubble.radius, 0, Math.PI * 2);
           ctx.fill();
 
-          ctx.strokeStyle = `rgba(${rgbStr}, ${0.4 * (1 - bubble.depth * 0.3)})`;
-          ctx.lineWidth = Math.max(1, bubble.radius * 0.08);
+          // Subtle rim glow
+          ctx.strokeStyle = `rgba(${rgbStr}, ${0.25 * (1 - bubble.depth * 0.3)})`;
+          ctx.lineWidth = Math.max(0.5, bubble.radius * 0.04);
           ctx.beginPath();
           ctx.arc(finalX, finalY, bubble.radius, 0, Math.PI * 2);
           ctx.stroke();
 
-          const highlightX = finalX - bubble.radius * 0.25;
-          const highlightY = finalY - bubble.radius * 0.25;
+          // Large soft inner glow from the highlight side
+          const innerGlowGradient = ctx.createRadialGradient(
+            finalX - bubble.radius * 0.3,
+            finalY - bubble.radius * 0.3,
+            0,
+            finalX - bubble.radius * 0.3,
+            finalY - bubble.radius * 0.3,
+            bubble.radius * 0.7
+          );
+          innerGlowGradient.addColorStop(0, `rgba(200, 230, 255, ${0.07 * (1 - bubble.depth * 0.2)})`);
+          innerGlowGradient.addColorStop(1, 'rgba(200, 230, 255, 0)');
+          ctx.fillStyle = innerGlowGradient;
+          ctx.beginPath();
+          ctx.arc(finalX, finalY, bubble.radius, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Sharp bright specular highlight
+          const highlightX = finalX - bubble.radius * 0.3;
+          const highlightY = finalY - bubble.radius * 0.3;
           const highlightGradient = ctx.createRadialGradient(
             highlightX,
             highlightY,
             0,
             highlightX,
             highlightY,
-            bubble.radius * 0.15
+            bubble.radius * 0.28
           );
-          highlightGradient.addColorStop(0, `rgba(255, 255, 255, ${0.8 * (1 - bubble.depth * 0.2)})`);
+          highlightGradient.addColorStop(0, `rgba(255, 255, 255, ${0.95 * (1 - bubble.depth * 0.15)})`);
+          highlightGradient.addColorStop(0.4, `rgba(255, 255, 255, ${0.4 * (1 - bubble.depth * 0.15)})`);
           highlightGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
 
           ctx.fillStyle = highlightGradient;
           ctx.beginPath();
-          ctx.arc(highlightX, highlightY, bubble.radius * 0.15, 0, Math.PI * 2);
+          ctx.arc(highlightX, highlightY, bubble.radius * 0.28, 0, Math.PI * 2);
           ctx.fill();
         }
       });
@@ -214,6 +253,8 @@ export default function BubbleCanvas({ config: propConfig, onConfigChange }: Bub
     animationFrameRef.current = requestAnimationFrame(animate);
 
     return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseleave', onMouseLeave);
       window.removeEventListener('resize', resizeCanvas);
       window.removeEventListener('scroll', handleScroll);
       if (animationFrameRef.current) {

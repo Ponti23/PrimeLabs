@@ -7,7 +7,57 @@
   --color-surface: #080f1c;
   --color-surface-2: #0e1728;
   --font-sans: var(--font-inter);
+
+  --animate-fade-up: fade-up 0.6s ease forwards;
+  --animate-fade-in: fade-in 0.5s ease forwards;
+  --animate-shimmer: shimmer 2.4s linear infinite;
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+  --animate-count-up: count-up 0.8s ease forwards;
 }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(0,212,255,0.25), 0 0 60px rgba(0,212,255,0.08); }
+  50%       { box-shadow: 0 0 35px rgba(0,212,255,0.5),  0 0 90px rgba(0,212,255,0.18); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.animate-fade-up    { animation: var(--animate-fade-up); }
+.animate-fade-in    { animation: var(--animate-fade-in); }
+.animate-shimmer    { animation: var(--animate-shimmer); }
+.animate-pulse-glow { animation: var(--animate-pulse-glow); }
+
+.animation-delay-100 { animation-delay: 0.1s; }
+.animation-delay-200 { animation-delay: 0.2s; }
+.animation-delay-300 { animation-delay: 0.3s; }
+.animation-delay-400 { animation-delay: 0.4s; }
+.animation-delay-500 { animation-delay: 0.5s; }
+.animation-delay-600 { animation-delay: 0.6s; }
+
+.opacity-0-init { opacity: 0; }
 
 body {
   background-color: #050a14;
