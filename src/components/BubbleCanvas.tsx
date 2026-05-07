@@ -47,7 +47,7 @@ export default function BubbleCanvas({ config: propConfig, onConfigChange }: Bub
   const scrollRef = useRef(0);
   const smoothScrollRef = useRef(0);
   const configRef = useRef<Config>({ ...DEFAULT_CONFIG, ...propConfig });
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
   const tintDivRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

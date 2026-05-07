@@ -18,7 +18,7 @@ interface BubbleSettingsProps {
 export default function BubbleSettings({ config, onChange }: BubbleSettingsProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleChange = (key: keyof Config, value: any) => {
+  const handleChange = <K extends keyof Config>(key: K, value: Config[K]) => {
     onChange({ ...config, [key]: value });
   };
 
