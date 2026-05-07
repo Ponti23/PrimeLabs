@@ -41,7 +41,7 @@ function ServiceCard({ s, index }: { s: typeof services[0]; index: number }) {
         drop-shadow-[0_0_8px_rgba(0,212,255,0.4)]
         group-hover:bg-gold/20 group-hover:drop-shadow-[0_0_16px_rgba(0,212,255,0.6)]
         transition-all duration-300">
-        {s.icon}
+        <span aria-hidden="true">{s.icon}</span>
       </div>
       <h3 className="text-xl font-bold mb-3 group-hover:text-gold transition-colors duration-300">{s.title}</h3>
       <p className="text-white/50 text-sm leading-relaxed mb-6">{s.description}</p>
@@ -53,15 +53,14 @@ function ServiceCard({ s, index }: { s: typeof services[0]; index: number }) {
           </li>
         ))}
       </ul>
-      <button
-        onClick={() => {
-          window.dispatchEvent(new CustomEvent('select-service', { detail: { service: s.title } }));
-          document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' });
-        }}
-        className="mt-6 inline-block text-xs font-bold text-gold/60 hover:text-gold transition-colors duration-200 tracking-wider uppercase"
-      >
-        Book This →
-      </button>
+      {s.title !== 'Mobile Service' && (
+        <button
+          onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+          className="mt-6 inline-block text-xs font-bold text-gold/60 hover:text-gold transition-colors duration-200 tracking-wider uppercase"
+        >
+          See Packages →
+        </button>
+      )}
     </div>
   );
 }

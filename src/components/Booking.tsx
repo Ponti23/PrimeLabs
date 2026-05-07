@@ -6,10 +6,7 @@ type Step = 'gate' | 'calendar';
 
 const SERVICE_OPTIONS = [
   { value: '', label: 'Select a service…' },
-  /*{ value: 'Exterior Detail', label: 'Exterior Detail' },
-  { value: 'Interior Detail', label: 'Interior Detail' },
-  { value: 'Full Detail (Exterior + Interior)', label: 'Full Detail (Exterior + Interior)' },
-  */{ value: 'Basic Package — $140', label: 'Basic Package — $140' },
+  { value: 'Basic Package — $140', label: 'Basic Package — $140' },
   { value: 'Silver Package — $180', label: 'Silver Package — $180' },
   { value: 'Gold Package — $250', label: 'Gold Package — $250' },
 ];
@@ -38,7 +35,7 @@ export default function Booking() {
 
   useEffect(() => { addressRef.current = address; }, [address]);
 
-  // Listen for service selection from Services/Pricing sections
+  // Listen for service selection from Pricing section
   useEffect(() => {
     const handler = (e: Event) => {
       const service = (e as CustomEvent<{ service: string }>).detail.service;
@@ -48,6 +45,46 @@ export default function Booking() {
     window.addEventListener('select-service', handler);
     return () => window.removeEventListener('select-service', handler);
   }, []);
+
+  // Initialize Cal.com inline embed when the calendar step is shown
+  useEffect(() => {
+    if (step !== 'calendar') return;
+
+    const container = document.getElementById('cal-inline');
+    if (container) container.innerHTML = '';
+
+    const init = () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const Cal = (window as any).Cal;
+      Cal('init', { origin: 'https://cal.com' });
+      Cal('inline', {
+        elementOrSelector: '#cal-inline',
+        calLink: 'ponti23',
+        layout: 'month_view',
+      });
+      Cal('ui', {
+        styles: { branding: { brandColor: '#00D4FF' } },
+        hideEventTypeDetails: false,
+        layout: 'month_view',
+      });
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((window as any).Cal) {
+      init();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://app.cal.com/embed/embed.js';
+    script.async = true;
+    script.onload = init;
+    document.head.appendChild(script);
+
+    return () => {
+      if (document.head.contains(script)) document.head.removeChild(script);
+    };
+  }, [step]);
 
   // Close suggestions on outside click
   useEffect(() => {
@@ -99,6 +136,8 @@ export default function Booking() {
     if (!selectedService) newErrors.service = 'Please select a service.';
     if (!address.trim()) {
       newErrors.address = 'Please enter your service address.';
+    } else if (address.trim().length < 10) {
+      newErrors.address = 'Please enter a complete address including street, city, and state.';
     } else if (addressStatus === 'invalid') {
       newErrors.address = 'Address not recognized — please select from the suggestions or check the spelling.';
     } else if (addressStatus === 'checking') {
@@ -144,14 +183,15 @@ export default function Booking() {
 
             {/* Service selector */}
             <div className="mb-8">
-              <label className="block text-sm font-bold text-white/80 mb-2">
+              <label htmlFor="service-select" className="block text-sm font-bold text-white/80 mb-2">
                 Service <span className="text-gold">*</span>
               </label>
               <div className="relative">
                 <select
+                  id="service-select"
                   value={selectedService}
                   onChange={(e) => { setSelectedService(e.target.value); setErrors((p) => ({ ...p, service: undefined })); }}
-                  className={`w-full bg-dark border rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:shadow-[0_0_0_3px_rgba(0,212,255,0.08)] transition-all cursor-pointer
+                  className={`w-full bg-dark border rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:shadow-[0_0_0_3px_rgba(0,212,255,0.15)] transition-all cursor-pointer
                     ${errors.service ? 'border-red-500/60' : selectedService ? 'border-gold/40 focus:border-gold/50' : 'border-white/10 focus:border-gold/50'}`}
                 >
                   {SERVICE_OPTIONS.map((o) => (
@@ -177,18 +217,19 @@ export default function Booking() {
 
             {/* Address with autocomplete */}
             <div className="mb-8" ref={wrapperRef}>
-              <label className="block text-sm font-bold text-white/80 mb-2">
+              <label htmlFor="address-input" className="block text-sm font-bold text-white/80 mb-2">
                 Service Address <span className="text-gold">*</span>
               </label>
               <div className="relative">
                 <input
+                  id="address-input"
                   type="text"
                   value={address}
                   onChange={(e) => handleAddressChange(e.target.value)}
                   onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
                   placeholder="123 Main St, City, State"
                   autoComplete="off"
-                  className={`w-full bg-dark border rounded-xl px-4 py-3 pr-10 text-white placeholder-white/30 focus:outline-none focus:shadow-[0_0_0_3px_rgba(0,212,255,0.08)] transition-all
+                  className={`w-full bg-dark border rounded-xl px-4 py-3 pr-10 text-white placeholder-white/30 focus:outline-none focus:shadow-[0_0_0_3px_rgba(0,212,255,0.15)] transition-all
                     ${errors.address ? 'border-red-500/60' : addressStatus === 'valid' ? 'border-emerald-500/50' : addressStatus === 'invalid' ? 'border-red-500/40' : 'border-white/10 focus:border-gold/50'}`}
                 />
                 {/* Status icon */}

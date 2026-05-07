@@ -7,7 +7,7 @@ const links = [
   { label: "Pricing", href: "#pricing" },
   { label: "Gallery", href: "#gallery" },
   { label: "About", href: "#about" },
-  { label: "Contact", href: "#booking" },
+  { label: "Contact", href: "#contact" },
 ];
 
 export default function Navbar() {
