@@ -5,6 +5,7 @@ import Pricing from "@/components/Pricing";
 import Gallery from "@/components/Gallery";
 import Booking from "@/components/Booking";
 import About from "@/components/About";
+import Testimonials from "@/components/Testimonials";
 import Footer from "@/components/Footer";
 
 export default function Home() {
@@ -16,8 +17,9 @@ export default function Home() {
         <Services />
         <Pricing />
         <Gallery />
-        <Booking />
         <About />
+        <Testimonials />
+        <Booking />
       </main>
       <Footer />
     </>

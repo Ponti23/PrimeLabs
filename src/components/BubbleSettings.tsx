@@ -55,14 +55,14 @@ export default function BubbleSettings({ config, onChange }: BubbleSettingsProps
           </label>
           <input
             type="range"
-            min="30"
+            min="4"
             max="200"
-            step="5"
+            step="1"
             value={config.density}
             onChange={(e) => handleChange('density', parseFloat(e.target.value))}
             className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
           />
-          <p className="text-xs text-gray-500 mt-1">Number of bubbles (30–200)</p>
+          <p className="text-xs text-gray-500 mt-1">Number of bubbles (4–200)</p>
         </div>
 
         {/* Drift Speed */}
@@ -74,13 +74,13 @@ export default function BubbleSettings({ config, onChange }: BubbleSettingsProps
           <input
             type="range"
             min="0.05"
-            max="1"
-            step="0.05"
+            max="15"
+            step="0.1"
             value={config.driftSpeed}
             onChange={(e) => handleChange('driftSpeed', parseFloat(e.target.value))}
             className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
           />
-          <p className="text-xs text-gray-500 mt-1">Upward movement speed (0.05–1.0)</p>
+          <p className="text-xs text-gray-500 mt-1">Upward movement speed (0.05–15.0)</p>
         </div>
 
         {/* Parallax */}
@@ -91,14 +91,14 @@ export default function BubbleSettings({ config, onChange }: BubbleSettingsProps
           </label>
           <input
             type="range"
-            min="0.1"
-            max="1"
+            min="0"
+            max="2"
             step="0.05"
             value={config.parallax}
             onChange={(e) => handleChange('parallax', parseFloat(e.target.value))}
             className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
           />
-          <p className="text-xs text-gray-500 mt-1">Scroll depth effect (0.1–1.0)</p>
+          <p className="text-xs text-gray-500 mt-1">Scroll depth effect (0–2.0)</p>
         </div>
 
         {/* Depth Tint Toggle */}
