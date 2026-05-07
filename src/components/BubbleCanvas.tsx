@@ -2,6 +2,11 @@
 
 import { useEffect, useRef } from 'react';
 
+const hexToRgb = (hex: string): [number, number, number] | null => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)] : null;
+};
+
 interface Bubble {
   x: number;
   worldY: number;
@@ -31,14 +36,26 @@ const DEFAULT_CONFIG: Config = {
   accentColor: '#00D4FF',
 };
 
-export default function BubbleCanvas() {
+interface BubbleCanvasProps {
+  config?: Partial<Config>;
+  onConfigChange?: (config: Config) => void;
+}
+
+export default function BubbleCanvas({ config: propConfig, onConfigChange }: BubbleCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bubblesRef = useRef<Bubble[]>([]);
   const scrollRef = useRef(0);
   const smoothScrollRef = useRef(0);
-  const configRef = useRef(DEFAULT_CONFIG);
+  const configRef = useRef<Config>({ ...DEFAULT_CONFIG, ...propConfig });
   const animationFrameRef = useRef<number>();
   const tintDivRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (propConfig) {
+      configRef.current = { ...configRef.current, ...propConfig };
+      onConfigChange?.(configRef.current);
+    }
+  }, [propConfig, onConfigChange]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -128,6 +145,10 @@ export default function BubbleCanvas() {
         const finalX = bubble.x + swayOffset;
 
         if (finalY > -bubble.radius * 2 && finalY < canvas.height + bubble.radius * 2) {
+          const accentColor = configRef.current.accentColor;
+          const rgb = hexToRgb(accentColor);
+          const rgbStr = rgb ? `${rgb[0]}, ${rgb[1]}, ${rgb[2]}` : '0, 212, 255';
+
           const gradient = ctx.createRadialGradient(
             finalX - bubble.radius * 0.3,
             finalY - bubble.radius * 0.3,
@@ -137,15 +158,15 @@ export default function BubbleCanvas() {
             bubble.radius
           );
           gradient.addColorStop(0, `rgba(255, 255, 255, ${0.6 * (1 - bubble.depth * 0.3)})`);
-          gradient.addColorStop(0.6, `rgba(0, 212, 255, ${0.3 * (1 - bubble.depth * 0.2)})`);
-          gradient.addColorStop(1, 'rgba(0, 212, 255, 0)');
+          gradient.addColorStop(0.6, `rgba(${rgbStr}, ${0.3 * (1 - bubble.depth * 0.2)})`);
+          gradient.addColorStop(1, `rgba(${rgbStr}, 0)`);
 
           ctx.fillStyle = gradient;
           ctx.beginPath();
           ctx.arc(finalX, finalY, bubble.radius, 0, Math.PI * 2);
           ctx.fill();
 
-          ctx.strokeStyle = `rgba(0, 212, 255, ${0.4 * (1 - bubble.depth * 0.3)})`;
+          ctx.strokeStyle = `rgba(${rgbStr}, ${0.4 * (1 - bubble.depth * 0.3)})`;
           ctx.lineWidth = Math.max(1, bubble.radius * 0.08);
           ctx.beginPath();
           ctx.arc(finalX, finalY, bubble.radius, 0, Math.PI * 2);
@@ -181,7 +202,10 @@ export default function BubbleCanvas() {
         tintDivRef.current.style.backgroundColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
 
         const glowAlpha = Math.max(0, 1 - scrollProgress);
-        tintDivRef.current.style.boxShadow = `inset 0 100px 200px rgba(0, 212, 255, ${glowAlpha * 0.1})`;
+        const accentColor = configRef.current.accentColor;
+        const rgb = hexToRgb(accentColor);
+        const rgbStr = rgb ? `${rgb[0]}, ${rgb[1]}, ${rgb[2]}` : '0, 212, 255';
+        tintDivRef.current.style.boxShadow = `inset 0 100px 200px rgba(${rgbStr}, ${glowAlpha * 0.1})`;
       }
 
       animationFrameRef.current = requestAnimationFrame(animate);
