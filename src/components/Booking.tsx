@@ -58,44 +58,63 @@ export default function Booking() {
     return () => document.removeEventListener('mousedown', onClick);
   }, []);
 
-  // Initialize Cal.com inline embed when the calendar step is shown
+  // Initialize Cal.com inline embed when the calendar step is shown.
+  // Uses Cal.com's official snippet pattern: window.Cal must be a queue
+  // function before embed.js loads, otherwise embed.js throws
+  // "Cal is not defined" and never injects the iframe.
   useEffect(() => {
     if (step !== 'calendar') return;
 
     const container = document.getElementById('cal-inline');
     if (container) container.innerHTML = '';
 
-    const init = () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const Cal = (window as any).Cal;
-      Cal('init', { origin: 'https://cal.com' });
-      Cal('inline', {
-        elementOrSelector: '#cal-inline',
-        calLink: 'ponti23/detail',
-        layout: 'month_view',
-      });
-      Cal('ui', {
-        styles: { branding: { brandColor: '#00D4FF' } },
-        hideEventTypeDetails: false,
-        layout: 'month_view',
-      });
-    };
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    (function (C: any, A: string, L: string) {
+      const p = function (a: any, ar: any) { a.q.push(ar); };
+      const d = C.document;
+      C.Cal = C.Cal || function () {
+        const cal = C.Cal;
+        // eslint-disable-next-line prefer-rest-params
+        const ar = arguments;
+        if (!cal.loaded) {
+          cal.ns = {};
+          cal.q = cal.q || [];
+          d.head.appendChild(d.createElement('script')).src = A;
+          cal.loaded = true;
+        }
+        if (ar[0] === L) {
+          const api: any = function () {
+            // eslint-disable-next-line prefer-rest-params
+            p(api, arguments);
+          };
+          const namespace = ar[1];
+          api.q = api.q || [];
+          if (typeof namespace === 'string') {
+            cal.ns[namespace] = cal.ns[namespace] || api;
+            p(cal.ns[namespace], ar);
+            p(cal, ['initNamespace', namespace]);
+          } else {
+            p(cal, ar);
+          }
+          return;
+        }
+        p(cal, ar);
+      };
+    })(window, 'https://app.cal.com/embed/embed.js', 'init');
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((window as any).Cal) {
-      init();
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = 'https://app.cal.com/embed/embed.js';
-    script.async = true;
-    script.onload = init;
-    document.head.appendChild(script);
-
-    return () => {
-      if (document.head.contains(script)) document.head.removeChild(script);
-    };
+    const Cal = (window as any).Cal;
+    Cal('init', 'detail', { origin: 'https://cal.com' });
+    Cal.ns.detail('inline', {
+      elementOrSelector: '#cal-inline',
+      calLink: 'ponti23/detail',
+      layout: 'month_view',
+    });
+    Cal.ns.detail('ui', {
+      styles: { branding: { brandColor: '#00D4FF' } },
+      hideEventTypeDetails: false,
+      layout: 'month_view',
+    });
+    /* eslint-enable @typescript-eslint/no-explicit-any */
   }, [step]);
 
   const fetchSuggestions = useCallback(async (query: string) => {
