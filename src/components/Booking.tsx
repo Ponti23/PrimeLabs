@@ -6,10 +6,10 @@ type Step = 'gate' | 'calendar';
 
 const SERVICE_OPTIONS = [
   { value: '', label: 'Select a service…' },
-  { value: 'Exterior Detail', label: 'Exterior Detail' },
+  /*{ value: 'Exterior Detail', label: 'Exterior Detail' },
   { value: 'Interior Detail', label: 'Interior Detail' },
   { value: 'Full Detail (Exterior + Interior)', label: 'Full Detail (Exterior + Interior)' },
-  { value: 'Basic Package — $140', label: 'Basic Package — $140' },
+  */{ value: 'Basic Package — $140', label: 'Basic Package — $140' },
   { value: 'Silver Package — $180', label: 'Silver Package — $180' },
   { value: 'Gold Package — $250', label: 'Gold Package — $250' },
 ];
