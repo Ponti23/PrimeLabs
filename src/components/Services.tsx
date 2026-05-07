@@ -53,12 +53,15 @@ function ServiceCard({ s, index }: { s: typeof services[0]; index: number }) {
           </li>
         ))}
       </ul>
-      <a
-        href="#booking"
+      <button
+        onClick={() => {
+          window.dispatchEvent(new CustomEvent('select-service', { detail: { service: s.title } }));
+          document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' });
+        }}
         className="mt-6 inline-block text-xs font-bold text-gold/60 hover:text-gold transition-colors duration-200 tracking-wider uppercase"
       >
         Book This →
-      </a>
+      </button>
     </div>
   );
 }

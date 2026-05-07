@@ -125,16 +125,22 @@ export default function Pricing() {
                     ))}
                   </ul>
 
-                  <a
-                    href="#booking"
-                    className={`block text-center font-bold py-3 rounded transition-all duration-200 ${
+                  <button
+                    onClick={() => {
+                      const prices: Record<string, number> = { Basic: 140, Silver: 180, Gold: 250 };
+                      window.dispatchEvent(new CustomEvent('select-service', {
+                        detail: { service: `${pkg.name} Package — $${prices[pkg.name]}` }
+                      }));
+                      document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className={`w-full block text-center font-bold py-3 rounded transition-all duration-200 ${
                       pkg.highlight
                         ? 'bg-gold text-black hover:bg-gold-light shadow-[0_0_20px_rgba(0,212,255,0.35)] hover:shadow-[0_0_30px_rgba(0,212,255,0.55)]'
                         : 'border border-white/20 text-white hover:border-gold/50 hover:text-gold'
                     }`}
                   >
                     Book {pkg.name}
-                  </a>
+                  </button>
                 </div>
               );
             })}
