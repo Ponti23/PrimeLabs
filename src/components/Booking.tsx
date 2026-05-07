@@ -309,7 +309,7 @@ export default function Booking() {
               </button>
             </div>
             <iframe
-              src="https://cal.com/ponti23/car-detailing?embed=true&layout=month_view&theme=dark&hideEventTypeDetails=false"
+              src="https://cal.com/ponti23/detail?embed=true&layout=month_view&theme=dark&hideEventTypeDetails=false"
               style={{ width: '100%', height: '700px', border: 'none' }}
               loading="lazy"
               title="Book your detail appointment"
