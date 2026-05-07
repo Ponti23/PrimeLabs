@@ -44,7 +44,7 @@ const packages = [
 
 export default function Pricing() {
   return (
-    <section id="pricing" className="py-24 px-6 bg-surface">
+    <section id="pricing" className="py-24 px-6">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <p className="text-gold text-sm font-bold tracking-widest uppercase mb-3">

@@ -9,7 +9,7 @@ const placeholders = [
 
 export default function Gallery() {
   return (
-    <section id="gallery" className="py-24 px-6 bg-dark">
+    <section id="gallery" className="py-24 px-6">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <p className="text-gold text-sm font-bold tracking-widest uppercase mb-3">

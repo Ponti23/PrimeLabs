@@ -80,7 +80,7 @@ export default function Booking() {
   };
 
   return (
-    <section id="booking" className="py-24 px-6 bg-surface">
+    <section id="booking" className="py-24 px-6">
       <div className="max-w-4xl mx-auto text-center">
         <p className="text-gold text-sm font-bold tracking-widest uppercase mb-3">
           Schedule Online
