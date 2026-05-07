@@ -46,45 +46,6 @@ export default function Booking() {
     return () => window.removeEventListener('select-service', handler);
   }, []);
 
-  // Initialize Cal.com inline embed when the calendar step is shown
-  useEffect(() => {
-    if (step !== 'calendar') return;
-
-    const container = document.getElementById('cal-inline');
-    if (container) container.innerHTML = '';
-
-    const init = () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const Cal = (window as any).Cal;
-      Cal('init', { origin: 'https://cal.com' });
-      Cal('inline', {
-        elementOrSelector: '#cal-inline',
-        calLink: 'ponti23',
-        layout: 'month_view',
-      });
-      Cal('ui', {
-        styles: { branding: { brandColor: '#00D4FF' } },
-        hideEventTypeDetails: false,
-        layout: 'month_view',
-      });
-    };
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((window as any).Cal) {
-      init();
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = 'https://app.cal.com/embed/embed.js';
-    script.async = true;
-    script.onload = init;
-    document.head.appendChild(script);
-
-    return () => {
-      if (document.head.contains(script)) document.head.removeChild(script);
-    };
-  }, [step]);
 
   // Close suggestions on outside click
   useEffect(() => {
@@ -347,9 +308,11 @@ export default function Booking() {
                 ← Change
               </button>
             </div>
-            <div
-              id="cal-inline"
-              style={{ width: '100%', minHeight: '600px', overflow: 'scroll' }}
+            <iframe
+              src="https://cal.com/ponti23?embed=true&layout=month_view&theme=dark&hideEventTypeDetails=false"
+              style={{ width: '100%', height: '700px', border: 'none' }}
+              loading="lazy"
+              title="Book your detail appointment"
             />
           </div>
         )}
