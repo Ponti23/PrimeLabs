@@ -47,13 +47,23 @@ function BeforeAfterSlider({ pair }: { pair: typeof pairs[0] }) {
   return (
     <div
       ref={containerRef}
-      className="relative aspect-[4/3] rounded-xl overflow-hidden cursor-ew-resize select-none border border-white/5"
+      className="relative aspect-[4/3] rounded-xl overflow-hidden cursor-ew-resize select-none border border-white/5 focus:outline-none focus:ring-2 focus:ring-gold/50"
+      tabIndex={0}
+      role="slider"
+      aria-label={`${pair.label} before and after comparison. Use arrow keys to adjust.`}
+      aria-valuenow={Math.round(position)}
+      aria-valuemin={0}
+      aria-valuemax={100}
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
       onMouseLeave={onMouseUp}
       onTouchStart={(e) => updatePosition(e.touches[0].clientX)}
       onTouchMove={onTouchMove}
+      onKeyDown={(e) => {
+        if (e.key === 'ArrowLeft') setPosition((p) => Math.max(0, p - 5));
+        if (e.key === 'ArrowRight') setPosition((p) => Math.min(100, p + 5));
+      }}
     >
       {/* After (full width, beneath) */}
       <div className={`absolute inset-0 ${pair.afterStyle}`}>
