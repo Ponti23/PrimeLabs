@@ -60,32 +60,17 @@ export default function BubbleCanvas({ config: propConfig, onConfigChange }: Bub
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) {
-      console.log('Canvas ref not available');
-      return;
-    }
-
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) {
-      console.log('Reduced motion enabled, skipping animation');
-      return;
-    }
+    if (!canvas) return;
 
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      console.log('Canvas resized to:', canvas.width, 'x', canvas.height);
     };
 
     resizeCanvas();
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      console.log('2D context not available');
-      return;
-    }
-
-    console.log('BubbleCanvas initialized, context ready');
+    if (!ctx) return;
 
     const onMouseMove = (e: MouseEvent) => { mouseRef.current = { x: e.clientX, y: e.clientY }; };
     const onMouseLeave = () => { mouseRef.current = null; };
@@ -98,7 +83,6 @@ export default function BubbleCanvas({ config: propConfig, onConfigChange }: Bub
     const initBubbles = () => {
       const bubbleCount = Math.floor((canvas.width * canvas.height) / 10000) * (configRef.current.density / 100);
       bubblesRef.current = [];
-      console.log('Creating', bubbleCount, 'bubbles');
 
       for (let i = 0; i < bubbleCount; i++) {
         const depth = Math.random() * 0.8 + 0.2;
