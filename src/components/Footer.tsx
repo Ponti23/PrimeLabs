@@ -11,7 +11,7 @@ export default function Footer() {
               PRIME<span className="text-gold drop-shadow-[0_0_8px_rgba(0,212,255,0.7)]">LABS</span>
             </div>
             <p className="text-white/40 text-sm leading-relaxed mb-5">
-              Mobile auto detailing that comes to you. Premium results, zero hassle.
+              Mobile car detailing that comes to you. Friendly, reliable, and thorough.
             </p>
             {/* Social */}
             <div className="flex gap-3">
@@ -63,7 +63,7 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-2 pt-1">
                 <span className="text-gold/50 text-xs">🕐</span>
-                <span>Mon–Sat, 8am–6pm</span>
+                <span>Mon, Tue, Thu, Fri, Sat · 7am–6pm</span>
               </li>
             </ul>
           </div>
@@ -71,7 +71,7 @@ export default function Footer() {
 
         <div className="border-t border-white/5 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-white/25">
           <p>© {new Date().getFullYear()} PrimeLabs. All rights reserved.</p>
-          <p>Mobile Auto Detailing · San Diego, CA</p>
+          <p>Mobile Car Detailing</p>
         </div>
       </div>
     </footer>

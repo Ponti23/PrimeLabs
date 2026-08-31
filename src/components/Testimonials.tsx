@@ -1,30 +1,7 @@
 'use client';
 
 import { useInView } from '@/hooks/useInView';
-
-const reviews = [
-  {
-    name: "Marcus T.",
-    location: "San Diego, CA",
-    rating: 5,
-    text: "Honestly blew me away. My 2019 Civic looked better than when I first drove it off the lot. The paint correction alone was worth every penny.",
-    pkg: "Gold Package",
-  },
-  {
-    name: "Aisha R.",
-    location: "Chula Vista, CA",
-    rating: 5,
-    text: "Super convenient — they came to my apartment complex parking lot while I was at work. Car was spotless by the time I got back. Will 100% book again.",
-    pkg: "Silver Package",
-  },
-  {
-    name: "Daniel K.",
-    location: "National City, CA",
-    rating: 5,
-    text: "The interior steam clean removed stains I thought were permanent. Professional, on time, and they cleaned up after themselves. Couldn't ask for more.",
-    pkg: "Gold Package",
-  },
-];
+import { reviews } from '@/config/reviews';
 
 function Stars({ count }: { count: number }) {
   return (
@@ -40,6 +17,8 @@ function Stars({ count }: { count: number }) {
 
 export default function Testimonials() {
   const { ref: headRef, inView: headIn } = useInView();
+  const { ref: bodyRef, inView: bodyIn } = useInView(0.1);
+  const hasReviews = reviews.length > 0;
 
   return (
     <section id="testimonials" className="py-24 px-6">
@@ -49,41 +28,56 @@ export default function Testimonials() {
           className={`text-center mb-16 ${headIn ? 'animate-fade-up' : 'opacity-0'}`}
         >
           <p className="text-gold text-sm font-bold tracking-widest uppercase mb-3">What Clients Say</p>
-          <h2 className="text-4xl md:text-5xl font-black">Real Results, Real Reviews</h2>
+          <h2 className="text-4xl md:text-5xl font-black">Reviews</h2>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          {reviews.map((r, i) => {
-            // eslint-disable-next-line react-hooks/rules-of-hooks
-            const { ref, inView } = useInView(0.1);
-            return (
-              <div
-                key={r.name}
-                ref={ref as React.RefObject<HTMLDivElement>}
-                className={`bg-surface-2 border border-white/5 rounded-2xl p-7
-                  hover:border-gold/20 hover:shadow-[0_0_32px_rgba(0,212,255,0.06)]
-                  transition-all duration-300
-                  ${inView ? 'animate-fade-up' : 'opacity-0'}`}
-                style={{ animationDelay: `${i * 0.15}s`, animationFillMode: 'forwards' }}
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <Stars count={r.rating} />
-                  <span className="text-xs text-gold/50 font-bold tracking-wider uppercase">{r.pkg}</span>
-                </div>
-                <p className="text-white/65 text-sm leading-relaxed mb-6">&ldquo;{r.text}&rdquo;</p>
-                <div className="flex items-center gap-3 pt-4 border-t border-white/5">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gold/30 to-gold/10 border border-gold/20 flex items-center justify-center text-xs font-black text-gold">
-                    {r.name[0]}
+        {hasReviews ? (
+          <div className="grid md:grid-cols-3 gap-6">
+            {reviews.map((r, i) => {
+              // eslint-disable-next-line react-hooks/rules-of-hooks
+              const { ref, inView } = useInView(0.1);
+              return (
+                <div
+                  key={`${r.name}-${i}`}
+                  ref={ref as React.RefObject<HTMLDivElement>}
+                  className={`bg-surface-2 border border-white/5 rounded-2xl p-7
+                    hover:border-gold/20 hover:shadow-[0_0_32px_rgba(0,212,255,0.06)]
+                    transition-all duration-300
+                    ${inView ? 'animate-fade-up' : 'opacity-0'}`}
+                  style={{ animationDelay: `${i * 0.15}s`, animationFillMode: 'forwards' }}
+                >
+                  <div className="mb-4">
+                    <Stars count={r.rating} />
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-white/80">{r.name}</p>
-                    <p className="text-xs text-white/35">{r.location}</p>
+                  <p className="text-white/65 text-sm leading-relaxed mb-6">&ldquo;{r.text}&rdquo;</p>
+                  <div className="flex items-center gap-3 pt-4 border-t border-white/5">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gold/30 to-gold/10 border border-gold/20 flex items-center justify-center text-xs font-black text-gold">
+                      {r.name[0]}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-white/80">{r.name}</p>
+                      {r.location && <p className="text-xs text-white/35">{r.location}</p>}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div
+            ref={bodyRef as React.RefObject<HTMLDivElement>}
+            className={`max-w-xl mx-auto text-center bg-surface-2 border border-white/5 rounded-2xl p-10 ${bodyIn ? 'animate-fade-up' : 'opacity-0'}`}
+            style={{ animationFillMode: 'forwards' }}
+          >
+            <div className="text-gold text-2xl mb-4 w-12 h-12 rounded-xl bg-gold/10 flex items-center justify-center mx-auto drop-shadow-[0_0_8px_rgba(0,212,255,0.4)]">
+              <span aria-hidden="true">★</span>
+            </div>
+            <h3 className="text-lg font-bold mb-2">Genuine reviews coming soon</h3>
+            <p className="text-white/50 text-sm leading-relaxed">
+              PrimeLabs is just getting started. Real customer reviews will appear here as they come in.
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );

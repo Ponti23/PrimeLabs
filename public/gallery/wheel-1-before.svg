@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-label="Wheel before placeholder">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#241d12"/>
+      <stop offset="1" stop-color="#1a1712"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#g)"/>
+  <circle cx="200" cy="180" r="90" fill="#000000" opacity="0.175"/><circle cx="200" cy="180" r="54" fill="#3a2f18" opacity="0.35"/><circle cx="560" cy="240" r="120" fill="#000000" opacity="0.175"/><circle cx="560" cy="240" r="72" fill="#3a2f18" opacity="0.35"/><circle cx="360" cy="430" r="100" fill="#000000" opacity="0.175"/><circle cx="360" cy="430" r="60" fill="#3a2f18" opacity="0.35"/><circle cx="640" cy="470" r="70" fill="#000000" opacity="0.175"/><circle cx="640" cy="470" r="42" fill="#3a2f18" opacity="0.35"/><circle cx="140" cy="420" r="80" fill="#000000" opacity="0.175"/><circle cx="140" cy="420" r="48" fill="#3a2f18" opacity="0.35"/>
+  <!-- simple car silhouette -->
+  <g opacity="0.55" fill="#2b2416" stroke="#6b5a34" stroke-opacity="0.2" stroke-width="3">
+    <path d="M170 380 q40 -90 130 -100 l180 0 q70 5 120 60 l70 20 q40 12 40 45 l0 25 -670 0 0 -45 q0 -20 20 -30 z"/>
+    <circle cx="290" cy="405" r="46" fill="#1a1712" stroke="#6b5a34" stroke-opacity="0.4"/>
+    <circle cx="560" cy="405" r="46" fill="#1a1712" stroke="#6b5a34" stroke-opacity="0.4"/>
+  </g>
+  
+  <text x="400" y="70" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="800" letter-spacing="6" fill="#6b5a34" opacity="0.8">WHEEL</text>
+  <text x="400" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="60" font-weight="900" letter-spacing="10" fill="#ffffff" opacity="0.12">BEFORE</text>
+  <text x="400" y="575" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#ffffff" opacity="0.3">Replace this placeholder — see MANAGE.md</text>
+</svg>

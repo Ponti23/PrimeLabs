@@ -1,10 +1,10 @@
 'use client';
 
 const trustItems = [
-  { icon: "★", text: "5.0 Rating" },
-  { icon: "✦", text: "100+ Cars Detailed" },
-  { icon: "◎", text: "Same-Day Booking" },
-  { icon: "⬡", text: "Mobile Service" },
+  { icon: "⬡", text: "We Come to You" },
+  { icon: "✦", text: "Interior & Exterior" },
+  { icon: "◈", text: "Rims & Tyres" },
+  { icon: "◎", text: "5 Days a Week" },
 ];
 
 export default function Hero() {
@@ -23,7 +23,7 @@ export default function Hero() {
           className="text-gold text-sm font-bold tracking-widest uppercase mb-4 opacity-0-init animate-fade-up"
           style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}
         >
-          Mobile Auto Detailing
+          Mobile Car Detailing
         </p>
 
         {/* Headline */}

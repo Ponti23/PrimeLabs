@@ -1,15 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import Terms from './Terms';
+import { sendBookingEmail } from '@/lib/sendBookingEmail';
 
-type Step = 'gate' | 'calendar';
-
-const SERVICE_OPTIONS = [
-  { value: '', label: 'Select a service…' },
-  { value: 'Basic Package — $140', label: 'Basic Package — $140' },
-  { value: 'Silver Package — $180', label: 'Silver Package — $180' },
-  { value: 'Gold Package — $250', label: 'Gold Package — $250' },
-];
+type Step = 'form' | 'calendar' | 'confirmed';
 
 interface Suggestion {
   place_id: number;
@@ -18,36 +13,72 @@ interface Suggestion {
 
 type AddressStatus = 'idle' | 'checking' | 'valid' | 'invalid';
 
-export default function Booking() {
-  const [step, setStep] = useState<Step>('gate');
-  const [address, setAddress] = useState('');
-  const [selectedService, setSelectedService] = useState('');
-  const [agreed, setAgreed] = useState(false);
-  const [errors, setErrors] = useState<{ address?: string; service?: string; agreed?: string }>({});
+interface FormState {
+  fullName: string;
+  mobile: string;
+  email: string;
+  vehicle: string;
+  address: string;
+  vehicleNotes: string;
+  additionalNotes: string;
+  photos: File[];
+}
 
-  // Address autocomplete
+interface Errors {
+  fullName?: string;
+  mobile?: string;
+  vehicle?: string;
+  address?: string;
+  agreed?: string;
+}
+
+const emptyForm: FormState = {
+  fullName: '',
+  mobile: '',
+  email: '',
+  vehicle: '',
+  address: '',
+  vehicleNotes: '',
+  additionalNotes: '',
+  photos: [],
+};
+
+function formatCalDateTime(iso?: string): { date: string; time: string } {
+  if (!iso) return { date: '', time: '' };
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return { date: '', time: '' };
+  return {
+    date: d.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+    time: d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }),
+  };
+}
+
+const inputBase =
+  'w-full bg-dark border rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:shadow-[0_0_0_3px_rgba(0,212,255,0.15)] transition-all';
+
+export default function Booking() {
+  const [step, setStep] = useState<Step>('form');
+  const [form, setForm] = useState<FormState>(emptyForm);
+  const [agreed, setAgreed] = useState(false);
+  const [errors, setErrors] = useState<Errors>({});
+  const [termsOpen, setTermsOpen] = useState(false);
+  const [confirmation, setConfirmation] = useState({ date: '', time: '' });
+
+  // Latest form snapshot for use inside the Cal.com callback closure.
+  const formRef = useRef<FormState>(form);
+  useEffect(() => { formRef.current = form; }, [form]);
+
+  // Address autocomplete (kept from the original, relabelled to Suburb).
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [addressStatus, setAddressStatus] = useState<AddressStatus>('idle');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const addressRef = useRef(address);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { addressRef.current = address; }, [address]);
+  const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
+    setForm((f) => ({ ...f, [key]: value }));
 
-  // Listen for service selection from Pricing section
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const service = (e as CustomEvent<{ service: string }>).detail.service;
-      setSelectedService(service);
-      setErrors((p) => ({ ...p, service: undefined }));
-    };
-    window.addEventListener('select-service', handler);
-    return () => window.removeEventListener('select-service', handler);
-  }, []);
-
-
-  // Close suggestions on outside click
+  // Close suggestions on outside click.
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
@@ -58,15 +89,83 @@ export default function Booking() {
     return () => document.removeEventListener('mousedown', onClick);
   }, []);
 
-  // Initialize Cal.com inline embed when the calendar step is shown.
-  // Uses Cal.com's official snippet pattern: window.Cal must be a queue
-  // function before embed.js loads, otherwise embed.js throws
-  // "Cal is not defined" and never injects the iframe.
+  const fetchSuggestions = useCallback(async (query: string) => {
+    if (query.length < 4) { setSuggestions([]); setAddressStatus('idle'); return; }
+    setAddressStatus('checking');
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`,
+        { headers: { 'Accept-Language': 'en' } }
+      );
+      const data: Suggestion[] = await res.json();
+      setSuggestions(data);
+      setAddressStatus(data.length > 0 ? 'valid' : 'idle');
+      setShowSuggestions(data.length > 0);
+    } catch {
+      setAddressStatus('idle');
+    }
+  }, []);
+
+  const handleAddressChange = (val: string) => {
+    set('address', val);
+    setAddressStatus('idle');
+    setSuggestions([]);
+    setErrors((p) => ({ ...p, address: undefined }));
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => fetchSuggestions(val), 800);
+  };
+
+  const handleSelectSuggestion = (s: Suggestion) => {
+    set('address', s.display_name);
+    setSuggestions([]);
+    setShowSuggestions(false);
+    setAddressStatus('valid');
+    setErrors((p) => ({ ...p, address: undefined }));
+  };
+
+  const handlePhotos = (files: FileList | null) => {
+    if (!files) return;
+    const incoming = Array.from(files).filter((f) => f.type.startsWith('image/'));
+    setForm((f) => ({ ...f, photos: [...f.photos, ...incoming] }));
+  };
+
+  const removePhoto = (index: number) =>
+    setForm((f) => ({ ...f, photos: f.photos.filter((_, i) => i !== index) }));
+
+  const validate = (): boolean => {
+    const e: Errors = {};
+    if (!form.fullName.trim()) e.fullName = 'Please enter your full name.';
+    if (!form.mobile.trim()) e.mobile = 'Please enter your mobile number.';
+    if (!form.vehicle.trim()) e.vehicle = 'Please enter your vehicle make & model.';
+    if (!form.address.trim()) e.address = 'Please enter your service address or suburb.';
+    if (!agreed) e.agreed = 'You must agree to the Terms & Conditions to continue.';
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const handleContinue = () => {
+    if (!validate()) {
+      document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    setStep('calendar');
+  };
+
+  // Initialize the Cal.com inline embed on the calendar step.
   useEffect(() => {
     if (step !== 'calendar') return;
 
     const container = document.getElementById('cal-inline');
     if (container) container.innerHTML = '';
+
+    const f = formRef.current;
+    const notes = [
+      `Vehicle: ${f.vehicle}`,
+      f.address ? `Service Address / Suburb: ${f.address}` : '',
+      f.vehicleNotes ? `Vehicle details / requests: ${f.vehicleNotes}` : '',
+      f.additionalNotes ? `Additional notes: ${f.additionalNotes}` : '',
+      f.photos.length ? `Photos provided: ${f.photos.length}` : '',
+    ].filter(Boolean).join('\n');
 
     /* eslint-disable @typescript-eslint/no-explicit-any */
     (function (C: any, A: string, L: string) {
@@ -108,156 +207,146 @@ export default function Booking() {
       elementOrSelector: '#cal-inline',
       calLink: 'ponti23/detail',
       layout: 'month_view',
+      config: {
+        name: f.fullName,
+        email: f.email || undefined,
+        notes,
+      },
     });
     Cal.ns.detail('ui', {
       styles: { branding: { brandColor: '#00D4FF' } },
       hideEventTypeDetails: false,
       layout: 'month_view',
     });
+    Cal.ns.detail('on', {
+      action: 'bookingSuccessful',
+      callback: (e: any) => {
+        const data = e?.detail?.data ?? {};
+        const iso = data?.booking?.startTime ?? data?.date ?? data?.startTime;
+        const { date, time } = formatCalDateTime(iso);
+        setConfirmation({ date, time });
+        setStep('confirmed');
+        window.scrollTo({ top: document.getElementById('booking')?.offsetTop ?? 0, behavior: 'smooth' });
+
+        const cur = formRef.current;
+        void sendBookingEmail({
+          fullName: cur.fullName,
+          mobile: cur.mobile,
+          email: cur.email,
+          vehicle: cur.vehicle,
+          address: cur.address,
+          preferredDate: date || 'See Cal.com booking',
+          preferredTime: time || 'See Cal.com booking',
+          vehicleNotes: cur.vehicleNotes,
+          additionalNotes: cur.additionalNotes,
+          photos: cur.photos,
+        }).then((res) => {
+          if (!res.ok) console.error('Booking notification email failed:', res.error);
+          else if (res.photosOmitted > 0) console.warn('Some photos were not attached:', res.error);
+        });
+      },
+    });
     /* eslint-enable @typescript-eslint/no-explicit-any */
   }, [step]);
 
-  const fetchSuggestions = useCallback(async (query: string) => {
-    if (query.length < 5) { setSuggestions([]); setAddressStatus('idle'); return; }
-    setAddressStatus('checking');
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`,
-        { headers: { 'Accept-Language': 'en' } }
-      );
-      const data: Suggestion[] = await res.json();
-      setSuggestions(data);
-      setAddressStatus(data.length > 0 ? 'valid' : 'invalid');
-      setShowSuggestions(data.length > 0);
-    } catch {
-      setAddressStatus('invalid');
-    }
-  }, []);
-
-  const handleAddressChange = (val: string) => {
-    setAddress(val);
-    setAddressStatus('idle');
-    setSuggestions([]);
-    setErrors((p) => ({ ...p, address: undefined }));
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => fetchSuggestions(val), 800);
-  };
-
-  const handleSelectSuggestion = (s: Suggestion) => {
-    setAddress(s.display_name);
-    setSuggestions([]);
-    setShowSuggestions(false);
-    setAddressStatus('valid');
-    setErrors((p) => ({ ...p, address: undefined }));
-  };
-
-  const handleContinue = () => {
-    const newErrors: typeof errors = {};
-    if (!selectedService) newErrors.service = 'Please select a service.';
-    if (!address.trim()) {
-      newErrors.address = 'Please enter your service address.';
-    } else if (address.trim().length < 10) {
-      newErrors.address = 'Please enter a complete address including street, city, and state.';
-    } else if (addressStatus === 'invalid') {
-      newErrors.address = 'Address not recognized — please select from the suggestions or check the spelling.';
-    } else if (addressStatus === 'checking') {
-      newErrors.address = 'Still verifying address, please wait a moment.';
-    }
-    if (!agreed) newErrors.agreed = 'You must agree to continue.';
-    if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
-    setErrors({});
-    setStep('calendar');
-  };
-
-  const statusIcon = () => {
-    if (addressStatus === 'checking') return (
-      <svg className="w-4 h-4 text-gold animate-spin" fill="none" viewBox="0 0 24 24">
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-      </svg>
-    );
-    if (addressStatus === 'valid') return (
-      <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-      </svg>
-    );
-    if (addressStatus === 'invalid') return (
-      <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-      </svg>
-    );
-    return null;
-  };
-
   return (
     <section id="booking" className="py-24 px-6">
-      <div className="max-w-4xl mx-auto text-center">
-        <p className="text-gold text-sm font-bold tracking-widest uppercase mb-3">Schedule Online</p>
+      <div className="max-w-3xl mx-auto text-center">
+        <p className="text-gold text-sm font-bold tracking-widest uppercase mb-3">Request a Booking</p>
         <h2 className="text-4xl md:text-5xl font-black mb-4">Book Your Detail</h2>
         <p className="text-white/50 mb-12 max-w-xl mx-auto">
-          Pick a time that works for you. We&apos;ll confirm your booking and show up ready to work.
+          Tell us about your car, then pick a time that suits you. We&apos;ll review your request and be
+          in touch with your quote and confirmation.
         </p>
 
-        {step === 'gate' ? (
-          <div className="bg-surface-2 border border-white/5 rounded-2xl p-8 md:p-12 text-left">
-
-            {/* Service selector */}
-            <div className="mb-8">
-              <label htmlFor="service-select" className="block text-sm font-bold text-white/80 mb-2">
-                Service <span className="text-gold">*</span>
-              </label>
-              <div className="relative">
-                <select
-                  id="service-select"
-                  value={selectedService}
-                  onChange={(e) => { setSelectedService(e.target.value); setErrors((p) => ({ ...p, service: undefined })); }}
-                  className={`w-full bg-dark border rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:shadow-[0_0_0_3px_rgba(0,212,255,0.15)] transition-all cursor-pointer
-                    ${errors.service ? 'border-red-500/60' : selectedService ? 'border-gold/40 focus:border-gold/50' : 'border-white/10 focus:border-gold/50'}`}
-                >
-                  {SERVICE_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value} className="bg-[#0e1728]">{o.label}</option>
-                  ))}
-                </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-white/30">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
+        {step === 'form' && (
+          <form
+            className="bg-surface-2 border border-white/5 rounded-2xl p-6 md:p-10 text-left"
+            onSubmit={(e) => { e.preventDefault(); handleContinue(); }}
+            noValidate
+          >
+            <div className="grid sm:grid-cols-2 gap-5">
+              {/* Full Name */}
+              <div>
+                <label htmlFor="fullName" className="block text-sm font-bold text-white/80 mb-2">
+                  Full Name <span className="text-gold">*</span>
+                </label>
+                <input
+                  id="fullName"
+                  type="text"
+                  value={form.fullName}
+                  onChange={(e) => { set('fullName', e.target.value); setErrors((p) => ({ ...p, fullName: undefined })); }}
+                  placeholder="Jane Smith"
+                  className={`${inputBase} ${errors.fullName ? 'border-red-500/60' : 'border-white/10 focus:border-gold/50'}`}
+                />
+                {errors.fullName && <p className="text-red-400 text-xs mt-1.5">{errors.fullName}</p>}
               </div>
-              {errors.service && <p className="text-red-400 text-xs mt-2">{errors.service}</p>}
-              {selectedService && !errors.service && (
-                <p className="text-emerald-400/70 text-xs mt-2 flex items-center gap-1">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                  </svg>
-                  {selectedService} selected
-                </p>
-              )}
+
+              {/* Mobile */}
+              <div>
+                <label htmlFor="mobile" className="block text-sm font-bold text-white/80 mb-2">
+                  Mobile Number <span className="text-gold">*</span>
+                </label>
+                <input
+                  id="mobile"
+                  type="tel"
+                  inputMode="tel"
+                  value={form.mobile}
+                  onChange={(e) => { set('mobile', e.target.value); setErrors((p) => ({ ...p, mobile: undefined })); }}
+                  placeholder="0400 000 000"
+                  className={`${inputBase} ${errors.mobile ? 'border-red-500/60' : 'border-white/10 focus:border-gold/50'}`}
+                />
+                {errors.mobile && <p className="text-red-400 text-xs mt-1.5">{errors.mobile}</p>}
+              </div>
+
+              {/* Email (optional) */}
+              <div>
+                <label htmlFor="email" className="block text-sm font-bold text-white/80 mb-2">
+                  Email <span className="text-white/30 font-normal">(optional)</span>
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => set('email', e.target.value)}
+                  placeholder="you@example.com"
+                  className={`${inputBase} border-white/10 focus:border-gold/50`}
+                />
+              </div>
+
+              {/* Vehicle */}
+              <div>
+                <label htmlFor="vehicle" className="block text-sm font-bold text-white/80 mb-2">
+                  Vehicle Make &amp; Model <span className="text-gold">*</span>
+                </label>
+                <input
+                  id="vehicle"
+                  type="text"
+                  value={form.vehicle}
+                  onChange={(e) => { set('vehicle', e.target.value); setErrors((p) => ({ ...p, vehicle: undefined })); }}
+                  placeholder="Toyota Corolla"
+                  className={`${inputBase} ${errors.vehicle ? 'border-red-500/60' : 'border-white/10 focus:border-gold/50'}`}
+                />
+                {errors.vehicle && <p className="text-red-400 text-xs mt-1.5">{errors.vehicle}</p>}
+              </div>
             </div>
 
-            {/* Address with autocomplete */}
-            <div className="mb-8" ref={wrapperRef}>
-              <label htmlFor="address-input" className="block text-sm font-bold text-white/80 mb-2">
-                Service Address <span className="text-gold">*</span>
+            {/* Address / Suburb */}
+            <div className="mt-5" ref={wrapperRef}>
+              <label htmlFor="address" className="block text-sm font-bold text-white/80 mb-2">
+                Service Address / Suburb <span className="text-gold">*</span>
               </label>
               <div className="relative">
                 <input
-                  id="address-input"
+                  id="address"
                   type="text"
-                  value={address}
+                  value={form.address}
                   onChange={(e) => handleAddressChange(e.target.value)}
                   onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-                  placeholder="123 Main St, City, State"
+                  placeholder="Street address or suburb"
                   autoComplete="off"
-                  className={`w-full bg-dark border rounded-xl px-4 py-3 pr-10 text-white placeholder-white/30 focus:outline-none focus:shadow-[0_0_0_3px_rgba(0,212,255,0.15)] transition-all
-                    ${errors.address ? 'border-red-500/60' : addressStatus === 'valid' ? 'border-emerald-500/50' : addressStatus === 'invalid' ? 'border-red-500/40' : 'border-white/10 focus:border-gold/50'}`}
+                  className={`${inputBase} ${errors.address ? 'border-red-500/60' : addressStatus === 'valid' ? 'border-emerald-500/40' : 'border-white/10 focus:border-gold/50'}`}
                 />
-                {/* Status icon */}
-                <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  {statusIcon()}
-                </div>
-
-                {/* Autocomplete dropdown */}
                 {showSuggestions && suggestions.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-[#0e1728] border border-white/10 rounded-xl overflow-hidden z-50 shadow-2xl">
                     {suggestions.map((s) => (
@@ -277,110 +366,202 @@ export default function Booking() {
                   </div>
                 )}
               </div>
-              {errors.address && <p className="text-red-400 text-xs mt-2">{errors.address}</p>}
-              {addressStatus === 'invalid' && !errors.address && (
-                <p className="text-red-400/70 text-xs mt-2">Address not found — try adding city and state.</p>
-              )}
-              {addressStatus === 'checking' && (
-                <p className="text-gold/60 text-xs mt-2">Verifying address…</p>
-              )}
+              {errors.address && <p className="text-red-400 text-xs mt-1.5">{errors.address}</p>}
             </div>
 
-            {/* Disclaimer card */}
-            <div className="bg-gold/5 border border-gold/20 rounded-xl p-6 mb-8">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center flex-shrink-0 drop-shadow-[0_0_8px_rgba(0,212,255,0.4)]">
-                  <svg className="w-5 h-5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20A10 10 0 0012 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-bold text-white mb-1">Service Notice</h3>
-                  <p className="text-white/50 text-sm mb-4">
-                    Our mobile detailing setup requires access to utilities at your location. We keep usage minimal and tidy up after every job.
-                  </p>
-                  <ul className="space-y-3">
-                    <li className="flex items-start gap-3 text-sm">
-                      <span className="w-1.5 h-1.5 rounded-full bg-gold mt-1.5 flex-shrink-0" />
-                      <span>
-                        <span className="text-white font-semibold">Water supply</span>
-                        <span className="text-white/50"> — a standard outdoor hose bib or faucet accessible from the service area.</span>
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-3 text-sm">
-                      <span className="w-1.5 h-1.5 rounded-full bg-gold mt-1.5 flex-shrink-0" />
-                      <span>
-                        <span className="text-white font-semibold">Power outlet</span>
-                        <span className="text-white/50"> — a standard 110V outlet (garage, exterior, or indoor nearby).</span>
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
+            {/* Vehicle notes */}
+            <div className="mt-5">
+              <label htmlFor="vehicleNotes" className="block text-sm font-bold text-white/80 mb-2">
+                Anything we should know about the vehicle?
+              </label>
+              <textarea
+                id="vehicleNotes"
+                rows={3}
+                value={form.vehicleNotes}
+                onChange={(e) => set('vehicleNotes', e.target.value)}
+                placeholder="Pet hair, stains, heavily soiled areas, carpet or seat cleaning requests, or anything else you'd like addressed."
+                className={`${inputBase} border-white/10 focus:border-gold/50 resize-none`}
+              />
+              <p className="text-white/35 text-xs mt-1.5">Additional charges may apply.</p>
             </div>
 
-            {/* Agreement checkbox */}
-            <label className="flex items-start gap-3 cursor-pointer mb-2">
-              <div className="relative mt-0.5 flex-shrink-0">
-                <input
-                  type="checkbox"
-                  checked={agreed}
-                  onChange={(e) => { setAgreed(e.target.checked); setErrors((p) => ({ ...p, agreed: undefined })); }}
-                  className="sr-only"
-                />
-                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all duration-200 ${agreed ? 'bg-gold border-gold shadow-[0_0_10px_rgba(0,212,255,0.4)]' : 'border-white/20 bg-dark'}`}>
-                  {agreed && (
-                    <svg className="w-3 h-3 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
+            {/* Photo upload */}
+            <div className="mt-5">
+              <label className="block text-sm font-bold text-white/80 mb-2">
+                Upload Photos <span className="text-white/30 font-normal">(optional)</span>
+              </label>
+              <label
+                htmlFor="photos"
+                className="flex items-center justify-center gap-3 w-full border border-dashed border-white/15 rounded-xl px-4 py-6 cursor-pointer hover:border-gold/40 hover:bg-white/[0.02] transition-colors text-white/50"
+              >
+                <svg className="w-5 h-5 text-gold/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span className="text-sm">Tap to add photos (you can add several)</span>
+              </label>
+              <input
+                id="photos"
+                type="file"
+                accept="image/*"
+                multiple
+                className="sr-only"
+                onChange={(e) => { handlePhotos(e.target.files); e.target.value = ''; }}
+              />
+              {form.photos.length > 0 && (
+                <ul className="mt-3 space-y-2">
+                  {form.photos.map((file, i) => (
+                    <li key={`${file.name}-${i}`} className="flex items-center justify-between gap-3 bg-dark border border-white/8 rounded-lg px-3 py-2 text-sm">
+                      <span className="truncate text-white/70">{file.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => removePhoto(i)}
+                        className="text-white/40 hover:text-red-400 transition-colors flex-shrink-0"
+                        aria-label={`Remove ${file.name}`}
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="text-white/35 text-xs mt-2">
+                Photos are optional, but providing them can help us provide a more accurate quote.
+              </p>
+            </div>
+
+            {/* Additional notes */}
+            <div className="mt-5">
+              <label htmlFor="additionalNotes" className="block text-sm font-bold text-white/80 mb-2">
+                Additional Notes <span className="text-white/30 font-normal">(optional)</span>
+              </label>
+              <textarea
+                id="additionalNotes"
+                rows={3}
+                value={form.additionalNotes}
+                onChange={(e) => set('additionalNotes', e.target.value)}
+                placeholder="Anything else you'd like us to know."
+                className={`${inputBase} border-white/10 focus:border-gold/50 resize-none`}
+              />
+            </div>
+
+            {/* Terms agreement */}
+            <div className="mt-8">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <div className="relative mt-0.5 flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={agreed}
+                    onChange={(e) => { setAgreed(e.target.checked); setErrors((p) => ({ ...p, agreed: undefined })); }}
+                    className="sr-only"
+                  />
+                  <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all duration-200 ${agreed ? 'bg-gold border-gold shadow-[0_0_10px_rgba(0,212,255,0.4)]' : 'border-white/20 bg-dark'}`}>
+                    {agreed && (
+                      <svg className="w-3 h-3 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <span className="text-sm text-white/60 leading-relaxed">
-                I confirm that water and power access will be available at the address above, and I agree to the service conditions described.
-              </span>
-            </label>
-            {errors.agreed && <p className="text-red-400 text-xs mb-6 ml-8">{errors.agreed}</p>}
+                <span className="text-sm text-white/70 leading-relaxed">
+                  I have read and agree to the{' '}
+                  <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); setTermsOpen(true); }}
+                    className="text-gold hover:text-gold-light underline underline-offset-2 font-medium"
+                  >
+                    Terms &amp; Conditions and Booking Policy
+                  </button>
+                  .
+                </span>
+              </label>
+              {errors.agreed && <p className="text-red-400 text-xs mt-1.5 ml-8">{errors.agreed}</p>}
+              <p className="text-white/40 text-xs mt-3 ml-8 leading-relaxed">
+                Please use the Additional Notes section to let us know about any important personal
+                belongings or if you do not want your vehicle used in PrimeLabs photos or videos.
+              </p>
+            </div>
 
             <button
-              onClick={handleContinue}
+              type="submit"
               className="w-full mt-8 bg-gold text-black font-bold py-4 rounded-xl hover:bg-gold-light transition-all duration-200 shadow-[0_0_24px_rgba(0,212,255,0.35)] hover:shadow-[0_0_36px_rgba(0,212,255,0.55)]"
             >
-              Continue to Booking →
+              Continue to Date &amp; Time →
             </button>
-          </div>
-        ) : (
+          </form>
+        )}
+
+        {step === 'calendar' && (
           <div className="bg-surface-2 border border-white/5 rounded-2xl overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 text-left flex-wrap gap-2">
               <div className="text-sm text-white/50 flex flex-col gap-0.5">
-                <span>
-                  Service: <span className="text-gold font-medium">{selectedService}</span>
-                </span>
-                <span>
-                  Address: <span className="text-white/80 font-medium">{address}</span>
-                </span>
+                <span>Vehicle: <span className="text-gold font-medium">{form.vehicle}</span></span>
+                <span>Location: <span className="text-white/80 font-medium">{form.address}</span></span>
               </div>
               <button
-                onClick={() => setStep('gate')}
+                onClick={() => setStep('form')}
                 className="text-xs text-white/30 hover:text-gold transition-colors"
               >
-                ← Change
+                ← Edit details
               </button>
             </div>
-            <div
-              id="cal-inline"
-              style={{ width: '100%', minHeight: '700px' }}
-            />
+            <p className="text-left text-white/45 text-sm px-6 pt-4">
+              Choose your preferred date &amp; time below. Wednesdays and Sundays are unavailable.
+            </p>
+            <div id="cal-inline" style={{ width: '100%', minHeight: '700px' }} />
           </div>
         )}
 
-        <p className="mt-6 text-sm text-white/40">
-          Prefer to call?{' '}
-          <a href="#contact" className="text-gold hover:text-gold-light transition-colors">
-            Get in touch directly
-          </a>
-        </p>
+        {step === 'confirmed' && (
+          <div className="bg-surface-2 border border-gold/25 rounded-2xl p-8 md:p-12 text-center animate-fade-up" style={{ animationFillMode: 'forwards' }}>
+            <div className="w-16 h-16 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center mx-auto mb-6 drop-shadow-[0_0_16px_rgba(0,212,255,0.4)]">
+              <svg className="w-8 h-8 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-3xl font-black mb-3">Booking Request Received!</h3>
+            <p className="text-white/60 mb-2">Thanks for choosing PrimeLabs.</p>
+            <p className="text-white/50 text-sm max-w-lg mx-auto mb-8">
+              Your booking request has been received and is currently being reviewed. We&apos;ll be in
+              contact shortly with your quote and confirmation details.
+            </p>
+
+            <div className="bg-dark border border-white/8 rounded-xl p-6 text-left max-w-md mx-auto mb-8">
+              <p className="text-gold text-xs font-bold tracking-widest uppercase mb-4">Your Request</p>
+              <dl className="space-y-3 text-sm">
+                {[
+                  ['Vehicle', form.vehicle],
+                  ['Preferred Date', confirmation.date || '—'],
+                  ['Preferred Time', confirmation.time || '—'],
+                  ['Location', form.address],
+                ].map(([label, value]) => (
+                  <div key={label} className="flex justify-between gap-4">
+                    <dt className="text-white/45 flex-shrink-0">{label}</dt>
+                    <dd className="text-white/85 font-medium text-right">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+
+            <p className="text-white/45 text-sm max-w-lg mx-auto">
+              Please note: Your appointment is not confirmed until you receive confirmation from
+              PrimeLabs.
+            </p>
+          </div>
+        )}
+
+        {step === 'form' && (
+          <p className="mt-6 text-sm text-white/40">
+            Prefer to reach out first?{' '}
+            <a href="#contact" className="text-gold hover:text-gold-light transition-colors">
+              Get in touch
+            </a>
+          </p>
+        )}
       </div>
+
+      <Terms open={termsOpen} onClose={() => setTermsOpen(false)} />
     </section>
   );
 }

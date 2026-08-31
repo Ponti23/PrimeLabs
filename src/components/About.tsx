@@ -1,25 +1,13 @@
 'use client';
 
-import { useInView, useCountUp } from '@/hooks/useInView';
+import { useInView } from '@/hooks/useInView';
 
-const stats = [
-  { value: 100, suffix: "+", label: "Cars Detailed" },
-  { value: 5, suffix: "★", label: "Average Rating" },
-  { value: 100, suffix: "%", label: "Mobile Service" },
-  { value: 2, suffix: "hr", label: "Avg. Job Time" },
+const facts = [
+  { value: 'Mobile', label: 'We come to you' },
+  { value: 'From $180', label: 'Maintenance Detail' },
+  { value: '5 days', label: 'Mon · Tue · Thu · Fri · Sat' },
+  { value: 'Driveway', label: 'Detailed on-site' },
 ];
-
-function StatCard({ stat, inView }: { stat: typeof stats[0]; inView: boolean }) {
-  const count = useCountUp(stat.value, inView, 1400);
-  return (
-    <div className="bg-surface-2 border border-white/5 rounded-2xl p-6 text-center hover:border-gold/20 transition-colors duration-300">
-      <div className="text-3xl font-black bg-gradient-to-r from-[#00D4FF] to-[#40E0FF] bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(0,212,255,0.4)] mb-1">
-        {count}{stat.suffix}
-      </div>
-      <div className="text-xs text-white/50 font-medium">{stat.label}</div>
-    </div>
-  );
-}
 
 export default function About() {
   const { ref: sectionRef, inView } = useInView(0.1);
@@ -36,20 +24,22 @@ export default function About() {
           >
             <p className="text-gold text-sm font-bold tracking-widest uppercase mb-3">Who We Are</p>
             <h2 className="text-4xl md:text-5xl font-black mb-6">
-              Passion for the{" "}
+              Your friendly{' '}
               <span className="bg-gradient-to-r from-[#00D4FF] to-[#40E0FF] bg-clip-text text-transparent">
-                Perfect Finish
+                neighbourhood detailer.
               </span>
             </h2>
             <p className="text-white/60 leading-relaxed mb-4">
-              PrimeLabs started with a simple idea: every car deserves
-              professional-grade care without the hassle of dropping it off at
-              a shop. We bring the detail bay to you, wherever you are.
+              PrimeLabs is a small mobile detailing business built around one simple idea: making it
+              easier to keep your car looking its best.
+            </p>
+            <p className="text-white/60 leading-relaxed mb-4">
+              I bring the setup to you, take my time with the details, and treat every car with the
+              same care I&apos;d want given to my own.
             </p>
             <p className="text-white/60 leading-relaxed mb-8">
-              We use professional-grade products and take pride in the
-              details — because that&apos;s what separates a good clean from a
-              truly great one.
+              No massive operation or complicated packages — just friendly, reliable detailing brought
+              straight to your driveway.
             </p>
             <a
               href="#booking"
@@ -64,8 +54,16 @@ export default function About() {
             className={`grid grid-cols-2 gap-4 ${inView ? 'animate-fade-up' : 'opacity-0'}`}
             style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}
           >
-            {stats.map((s) => (
-              <StatCard key={s.label} stat={s} inView={inView} />
+            {facts.map((f) => (
+              <div
+                key={f.label}
+                className="bg-surface-2 border border-white/5 rounded-2xl p-6 text-center hover:border-gold/20 transition-colors duration-300"
+              >
+                <div className="text-2xl font-black bg-gradient-to-r from-[#00D4FF] to-[#40E0FF] bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(0,212,255,0.4)] mb-1">
+                  {f.value}
+                </div>
+                <div className="text-xs text-white/50 font-medium">{f.label}</div>
+              </div>
             ))}
           </div>
         </div>

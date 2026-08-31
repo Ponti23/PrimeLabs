@@ -9,9 +9,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "PrimeLabs | Mobile Auto Detailing",
+  title: "PrimeLabs | Mobile Car Detailing",
   description:
-    "Premium mobile auto detailing that comes to you. Book online for Exterior, Interior, and Full Detail packages.",
+    "Friendly mobile car detailing brought to your driveway. Our Maintenance Detail covers interior, exterior, and wheels from $180 — request a booking online.",
 };
 
 export default function RootLayout({
