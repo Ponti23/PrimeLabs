@@ -48,7 +48,7 @@ Cal.com, so there's nothing to redeploy.
 
 ## 3. Updating the Before & After photos
 
-Photos live in **`public/gallery/`** and are listed in **`src/config/gallery.ts`**.
+Photos live in **`public/gallery/`** and are listed in **`src/config/gallery.ts`**. The redesigned site currently shows stills from your video, stored in **`public/media/`**. Placeholder SVG pairs are hidden. Adding real JPG, PNG or WebP before/after pairs enables the category filters and comparison sliders automatically.
 
 **Easiest way — replace a file:**
 Upload your new photo to `public/gallery/` using the **exact same filename** as the
@@ -77,7 +77,7 @@ item looks like:
 ## 4. Adding genuine reviews
 
 Reviews live in **`src/config/reviews.ts`**. While the list is empty, the site
-shows a tidy "reviews coming soon" message. To add a review, add an object to the
+hides the reviews section. To add a review, add an object to the
 `reviews` array:
 
 ```ts
@@ -97,7 +97,7 @@ export const reviews: Review[] = [
 
 Open **`src/components/Pricing.tsx`**:
 
-- The **price** is the `$180` in the line that reads `From $180`.
+- The **price** is the `$180` in the price block. Also update the description in `src/app/layout.tsx` when the price changes.
 - The **inclusions** are the list at the top (`const includes = [ … ]`) — edit,
   add, or remove lines there.
 
