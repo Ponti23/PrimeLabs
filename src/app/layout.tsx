@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import BubbleCanvasWrapper from "@/components/BubbleCanvasWrapper";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -20,9 +21,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
-      <body>
-        <a href="#main-content" className="skip-link">Skip to content</a>
-        {children}
+      <body className="min-h-full flex flex-col bg-dark text-white">
+        <BubbleCanvasWrapper />
+        <div style={{ position: "relative", zIndex: 2, display: "flex", flexDirection: "column", flex: 1 }}>
+          {children}
+        </div>
       </body>
     </html>
   );

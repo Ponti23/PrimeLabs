@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Terms from './Terms';
 import { sendBookingEmail } from '@/lib/sendBookingEmail';
-import './booking.css';
 
 type Step = 'form' | 'calendar' | 'confirmed';
 
@@ -55,7 +54,7 @@ function formatCalDateTime(iso?: string): { date: string; time: string } {
 }
 
 const inputBase =
-  'booking-input w-full bg-dark border rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none transition-all';
+  'w-full bg-dark border rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-2 focus:outline-gold focus:outline-offset-2 transition-all';
 
 export default function Booking() {
   const [step, setStep] = useState<Step>('form');
@@ -256,11 +255,11 @@ export default function Booking() {
   }, [step]);
 
   return (
-    <section id="booking" className="booking-shell py-24 px-6">
-      <div className="booking-layout max-w-3xl mx-auto text-center">
-        <header className="booking-header">
-          <h2 className="booking-title text-4xl md:text-5xl font-black mb-4">Book Your Detail</h2>
-          <p className="booking-intro text-white/50 mb-12 max-w-xl mx-auto">
+    <section id="booking" className="py-24 px-6">
+      <div className="max-w-3xl mx-auto text-center">
+        <header className="">
+          <h2 className="text-4xl md:text-5xl font-black mb-4">Book Your Detail</h2>
+          <p className="text-white/50 mb-12 max-w-xl mx-auto">
             Tell us about your car, then pick a time that suits you. We&apos;ll review your request and be
             in touch with your quote and confirmation.
           </p>
@@ -268,7 +267,7 @@ export default function Booking() {
 
         {step === 'form' && (
           <form
-            className="booking-panel bg-surface-2 border border-white/5 rounded-2xl p-6 md:p-10 text-left"
+            className="bg-surface-2 border border-white/5 rounded-2xl p-6 md:p-10 text-left"
             onSubmit={(e) => { e.preventDefault(); handleContinue(); }}
             noValidate
           >
@@ -349,7 +348,7 @@ export default function Booking() {
               <label htmlFor="address" className="block text-sm font-bold text-white/80 mb-2">
                 Service Address / Suburb <span className="text-gold">*</span>
               </label>
-              <div className="booking-address relative">
+              <div className="relative">
                 <input
                   id="address"
                   type="text"
@@ -363,7 +362,7 @@ export default function Booking() {
                   className={`${inputBase} ${errors.address ? 'border-red-500/60' : addressStatus === 'valid' ? 'border-emerald-500/40' : 'border-white/10 focus:border-gold/50'}`}
                 />
                 {showSuggestions && suggestions.length > 0 && (
-                  <div className="booking-suggestions absolute top-full left-0 right-0 mt-1 bg-[#0e1728] border border-white/10 rounded-xl overflow-hidden z-50 shadow-2xl">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-[#0e1728] border border-white/10 rounded-xl overflow-hidden z-50 shadow-2xl">
                     {suggestions.map((s) => (
                       <button
                         key={s.place_id}
@@ -407,7 +406,7 @@ export default function Booking() {
               </label>
               <label
                 htmlFor="photos"
-                className="booking-upload flex items-center justify-center gap-3 w-full border border-dashed border-white/15 rounded-xl px-4 py-6 cursor-pointer hover:border-gold/40 hover:bg-white/[0.02] transition-colors text-white/50"
+                className="flex items-center justify-center gap-3 w-full border border-dashed border-white/15 rounded-xl px-4 py-6 cursor-pointer hover:border-gold/40 hover:bg-white/[0.02] transition-colors text-white/50"
               >
                 <svg className="w-5 h-5 text-gold/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -425,7 +424,7 @@ export default function Booking() {
               {form.photos.length > 0 && (
                 <ul className="mt-3 space-y-2">
                   {form.photos.map((file, i) => (
-                    <li key={`${file.name}-${i}`} className="booking-file flex items-center justify-between gap-3 bg-dark border border-white/8 rounded-lg px-3 py-2 text-sm">
+                    <li key={`${file.name}-${i}`} className="flex items-center justify-between gap-3 bg-dark border border-white/8 rounded-lg px-3 py-2 text-sm">
                       <span className="truncate text-white/70">{file.name}</span>
                       <button
                         type="button"
@@ -462,7 +461,7 @@ export default function Booking() {
             </div>
 
             {/* Terms agreement */}
-            <div className="booking-consent mt-8">
+            <div className="mt-8">
               <label className="flex items-start gap-3 cursor-pointer">
                 <div className="relative mt-0.5 flex-shrink-0">
                   <input
@@ -474,7 +473,7 @@ export default function Booking() {
                     onChange={(e) => { setAgreed(e.target.checked); setErrors((p) => ({ ...p, agreed: undefined })); }}
                     className="sr-only"
                   />
-                  <div className={`booking-checkbox w-5 h-5 rounded border flex items-center justify-center transition-all duration-200 ${agreed ? 'booking-is-checked bg-gold border-gold' : 'border-white/20 bg-dark'}`}>
+                  <div className={` w-5 h-5 rounded border flex items-center justify-center transition-all duration-200 ${agreed ? ' bg-gold border-gold' : 'border-white/20 bg-dark'}`}>
                     {agreed && (
                       <svg className="w-3 h-3 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -503,7 +502,7 @@ export default function Booking() {
 
             <button
               type="submit"
-              className="booking-submit w-full mt-8 bg-gold text-black font-bold py-4 rounded-xl hover:bg-gold-light transition-all duration-200"
+              className="w-full mt-8 bg-gold text-black font-bold py-4 rounded-xl hover:bg-gold-light transition-all duration-200"
             >
               Continue to Date &amp; Time →
             </button>
@@ -511,7 +510,7 @@ export default function Booking() {
         )}
 
         {step === 'calendar' && (
-          <div className="booking-panel booking-calendar bg-surface-2 border border-white/5 rounded-2xl overflow-hidden">
+          <div className=" bg-surface-2 border border-white/5 rounded-2xl overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 text-left flex-wrap gap-2">
               <div className="text-sm text-white/50 flex flex-col gap-0.5">
                 <span>Vehicle: <span className="text-gold font-medium">{form.vehicle}</span></span>
@@ -532,8 +531,8 @@ export default function Booking() {
         )}
 
         {step === 'confirmed' && (
-          <div className="booking-panel booking-confirmed bg-surface-2 border border-gold/25 rounded-2xl p-8 md:p-12 text-center animate-fade-up" style={{ animationFillMode: 'forwards' }}>
-            <div className="booking-confirmed-mark w-16 h-16 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center mx-auto mb-6">
+          <div className=" bg-surface-2 border border-gold/25 rounded-2xl p-8 md:p-12 text-center animate-fade-up" style={{ animationFillMode: 'forwards' }}>
+            <div className="w-16 h-16 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center mx-auto mb-6">
               <svg className="w-8 h-8 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
               </svg>
@@ -545,7 +544,7 @@ export default function Booking() {
               contact shortly with your quote and confirmation details.
             </p>
 
-            <div className="booking-summary bg-dark border border-white/8 rounded-xl p-6 text-left max-w-md mx-auto mb-8">
+            <div className="bg-dark border border-white/8 rounded-xl p-6 text-left max-w-md mx-auto mb-8">
               <p className="text-gold text-xs font-bold tracking-widest uppercase mb-4">Your Request</p>
               <dl className="space-y-3 text-sm">
                 {[

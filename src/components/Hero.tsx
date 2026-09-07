@@ -1,18 +1,135 @@
 'use client';
-import { useRef, useState } from 'react';
-import Image from 'next/image';
+
+import { useEffect, useRef, useState } from 'react';
+
+const trustItems = [
+  { icon: "⬡", text: "We Come to You" },
+  { icon: "✦", text: "Interior & Exterior" },
+  { icon: "◈", text: "Rims & Tyres" },
+];
+
 export default function Hero() {
-  const video = useRef<HTMLVideoElement>(null);
-  const [opened, setOpened] = useState(false);
-  async function play() { setOpened(true); try { await video.current?.play(); } catch { /* Native controls remain available. */ } }
-  return <section id="hero" className="hero">
-    <div className="hero-heading page-width"><h1>Good as new.<br /><span>Better as yours.</span></h1><div className="hero-intro"><p>A proper detail. A fresh start.<br />Car care, brought to your driveway.</p><a className="button button-acid" href="#booking">Book your detail <span aria-hidden="true">↗</span></a></div></div>
-    <div className={`hero-film ${opened ? 'film-open' : ''}`}>
-      <Image src="/media/hero.jpg" alt="Blue Volkswagen in a driveway, from the PrimeLabs detailing film" fill priority sizes="100vw" className="hero-poster" />
-      <video ref={video} playsInline controls={opened} preload="none" poster="/media/hero.jpg" aria-label="PrimeLabs detailing film"><source src="/media/primelabs-film.mp4" type="video/mp4" /></video>
-      {!opened && <div className="film-caption"><span>THE LITTLE THINGS.<br />THE BIG DIFFERENCE.</span><button className="film-play" onClick={play} aria-label="Play the PrimeLabs detailing film"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m9 5 11 7-11 7z" /></svg><span>Watch the detail <small>00:27</small></span></button></div>}
-      <div className="film-edge" aria-hidden="true">PRIMELABS / IN THE DETAILS</div>
-    </div>
-    <div className="service-strip"><span>YOUR DRIVEWAY. OUR WORKSPACE.</span><span>INTERIOR + EXTERIOR</span><span>ONE COMPLETE DETAIL</span><a href="#services">Explore the service <span aria-hidden="true">↓</span></a></div>
-  </section>;
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+  useEffect(() => {
+    const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const sync = () => {
+      if (preference.matches) videoRef.current?.pause();
+      else videoRef.current?.play().catch(() => {});
+    };
+    sync();
+    preference.addEventListener('change', sync);
+    return () => preference.removeEventListener('change', sync);
+  }, []);
+  const toggleVideo = () => {
+    if (videoRef.current?.paused) videoRef.current.play().catch(() => {});
+    else videoRef.current?.pause();
+  };
+  return (
+    <section
+      id="hero"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+    >
+      <video
+        ref={videoRef}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        poster="/media/hero.jpg"
+        className="absolute inset-0 h-full w-full object-cover"
+        aria-hidden="true"
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+      >
+        <source src="/media/primelabs-film.mp4" type="video/mp4" />
+      </video>
+      <div className="absolute inset-0 bg-dark/75" aria-hidden="true" />
+      <button
+        type="button"
+        onClick={toggleVideo}
+        className="absolute bottom-6 left-6 z-20 rounded border border-white/40 bg-dark/80 px-4 py-2 text-sm text-white hover:border-gold focus-visible:outline-2 focus-visible:outline-gold"
+        aria-label={playing ? 'Pause background video' : 'Play background video'}
+      >
+        {playing ? 'Pause video' : 'Play video'}
+      </button>
+      {/* Ambient glow */}
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-gold/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gold/3 rounded-full blur-[180px] pointer-events-none" />
+
+      <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
+        {/* Eyebrow */}
+        <p
+          className="text-gold text-sm font-bold tracking-widest uppercase mb-4 opacity-0-init animate-fade-up"
+          style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}
+        >
+          Mobile Car Detailing
+        </p>
+
+        {/* Headline */}
+        <h1
+          className="text-5xl md:text-7xl font-black leading-tight mb-6 opacity-0-init animate-fade-up"
+          style={{ animationDelay: '0.25s', animationFillMode: 'forwards' }}
+        >
+          Your Car Deserves{" "}
+          <span className="bg-gradient-to-r from-[#00D4FF] to-[#40E0FF] bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(0,212,255,0.4)]">
+            The Best.
+          </span>
+        </h1>
+
+        {/* Sub */}
+        <p
+          className="text-white/60 text-lg md:text-xl max-w-2xl mx-auto mb-10 opacity-0-init animate-fade-up"
+          style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}
+        >
+          PrimeLabs brings professional-grade detailing straight to your
+          driveway. No drop-offs, no waiting — just a showroom finish at your
+          door.
+        </p>
+
+        {/* CTAs */}
+        <div
+          className="flex flex-col sm:flex-row gap-4 justify-center mb-16 opacity-0-init animate-fade-up"
+          style={{ animationDelay: '0.55s', animationFillMode: 'forwards' }}
+        >
+          <a
+            href="#booking"
+            className="bg-gold text-black font-bold px-8 py-4 rounded text-base hover:bg-gold-light transition-all duration-200 shadow-[0_0_24px_rgba(0,212,255,0.35)] hover:shadow-[0_0_36px_rgba(0,212,255,0.55)]"
+          >
+            Book Your Detail
+          </a>
+          <a
+            href="#services"
+            className="border border-white/20 text-white font-semibold px-8 py-4 rounded text-base hover:border-gold/50 hover:text-gold transition-colors duration-200"
+          >
+            See Services
+          </a>
+        </div>
+
+        {/* Trust bar */}
+        <div
+          className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 opacity-0-init animate-fade-up"
+          style={{ animationDelay: '0.7s', animationFillMode: 'forwards' }}
+        >
+          {trustItems.map((item, i) => (
+            <div key={i} className="flex items-center gap-2 text-sm text-white/40">
+              <span className="text-gold text-xs">{item.icon}</span>
+              <span>{item.text}</span>
+              {i < trustItems.length - 1 && (
+                <span className="ml-8 hidden sm:block w-px h-3 bg-white/10" />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Scroll indicator */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce opacity-40">
+        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+    </section>
+  );
 }

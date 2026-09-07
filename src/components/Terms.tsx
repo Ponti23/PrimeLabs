@@ -134,7 +134,7 @@ export default function Terms({ open, onClose }: TermsProps) {
 
   return (
     <div
-      className="booking-terms-backdrop fixed inset-0 z-[100] flex items-start justify-center p-4 md:p-8 overflow-y-auto bg-black/70 animate-fade-in"
+      className="fixed inset-0 z-[100] flex items-start justify-center p-4 md:p-8 overflow-y-auto bg-black/70 animate-fade-in"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -142,11 +142,11 @@ export default function Terms({ open, onClose }: TermsProps) {
     >
       <div
         ref={dialogRef}
-        className="booking-terms relative w-full max-w-2xl my-8 bg-surface-2 border border-white/10 rounded-2xl"
+        className="relative w-full max-w-2xl my-8 bg-surface-2 border border-white/10 rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="booking-terms-header sticky top-0 z-10 flex items-center justify-between px-6 md:px-8 py-5 border-b border-white/10 bg-surface-2/95">
+        <div className="sticky top-0 z-10 flex items-center justify-between px-6 md:px-8 py-5 border-b border-white/10 bg-surface-2/95">
           <div>
             <p className="text-gold text-xs font-bold tracking-widest uppercase mb-1">PrimeLabs</p>
             <h2 id="terms-title" className="text-xl md:text-2xl font-black">Terms &amp; Conditions</h2>
@@ -154,7 +154,7 @@ export default function Terms({ open, onClose }: TermsProps) {
           <button
             onClick={onClose}
             aria-label="Close terms and conditions"
-            className="booking-terms-close w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-gold hover:border-gold/30 transition-colors flex-shrink-0"
+            className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-gold hover:border-gold/30 transition-colors flex-shrink-0"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -163,7 +163,7 @@ export default function Terms({ open, onClose }: TermsProps) {
         </div>
 
         {/* Body */}
-        <div className="booking-terms-body px-6 md:px-8 py-6 space-y-6">
+        <div className="px-6 md:px-8 py-6 space-y-6">
           {sections.map((s) => (
             <div key={s.heading}>
               <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-2">{s.heading}</h3>
@@ -185,10 +185,10 @@ export default function Terms({ open, onClose }: TermsProps) {
         </div>
 
         {/* Footer */}
-        <div className="booking-terms-footer sticky bottom-0 px-6 md:px-8 py-4 border-t border-white/10 bg-surface-2/95">
+        <div className="sticky bottom-0 px-6 md:px-8 py-4 border-t border-white/10 bg-surface-2/95">
           <button
             onClick={onClose}
-            className="booking-terms-action w-full bg-gold text-black font-bold py-3 rounded-xl hover:bg-gold-light transition-colors duration-200"
+            className="w-full bg-gold text-black font-bold py-3 rounded-xl hover:bg-gold-light transition-colors duration-200"
           >
             Close
           </button>
