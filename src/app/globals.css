@@ -68,6 +68,64 @@ html {
   scroll-behavior: smooth;
 }
 
+.film-opening {
+  height: 100svh;
+  min-height: 360px;
+  padding-top: 76px;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) 112px;
+  background: #050a14;
+}
+.film-opening-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: contain;
+}
+.film-opening-controls { position: relative; }
+.film-scroll-hint {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 14px;
+  color: #00D4FF;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.film-scroll-hint svg { animation: scroll-nudge 1.8s ease-in-out infinite; }
+.film-pause {
+  position: absolute;
+  bottom: 16px;
+  left: 24px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid #ffffff66;
+  border-radius: 6px;
+  background: #080f1c;
+  color: white;
+  font-size: 13px;
+}
+.film-pause:hover { border-color: #00D4FF; }
+.film-pause:focus-visible, .film-scroll-hint:focus-visible {
+  outline: 2px solid #00D4FF;
+  outline-offset: 3px;
+}
+@keyframes scroll-nudge {
+  0%, 100% { transform: translateY(-2px); }
+  50% { transform: translateY(3px); }
+}
+@media (max-width: 640px) {
+  .film-opening { padding-top: 64px; }
+  .film-pause { left: 16px; }
+}
+
 input[type="checkbox"]:focus-visible + div {
   outline: 2px solid #00D4FF;
   outline-offset: 3px;

@@ -26,38 +26,42 @@ export default function Hero() {
     else videoRef.current?.pause();
   };
   return (
-    <section
-      id="hero"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
-    >
-      <video
-        ref={videoRef}
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        poster="/media/hero.jpg"
-        className="absolute inset-0 h-full w-full object-cover"
-        aria-hidden="true"
-        onPlay={() => setPlaying(true)}
-        onPause={() => setPlaying(false)}
-      >
-        <source src="/media/primelabs-film.mp4" type="video/mp4" />
-      </video>
-      <div className="absolute inset-0 bg-dark/75" aria-hidden="true" />
-      <button
-        type="button"
-        onClick={toggleVideo}
-        className="absolute bottom-6 left-6 z-20 rounded border border-white/40 bg-dark/80 px-4 py-2 text-sm text-white hover:border-gold focus-visible:outline-2 focus-visible:outline-gold"
-        aria-label={playing ? 'Pause background video' : 'Play background video'}
-      >
-        {playing ? 'Pause video' : 'Play video'}
-      </button>
-      {/* Ambient glow */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-gold/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gold/3 rounded-full blur-[180px] pointer-events-none" />
-
+    <>
+      <section id="hero" className="film-opening" aria-label="PrimeLabs detailing film">
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster="/media/hero.jpg"
+          className="film-opening-video"
+          aria-label="PrimeLabs car detailing showcase"
+          onPlay={() => setPlaying(true)}
+          onPause={() => setPlaying(false)}
+        >
+          <source src="/media/primelabs-film.mp4" type="video/mp4" />
+          Your browser does not support this video.
+        </video>
+        <div className="film-opening-controls">
+          <a className="film-scroll-hint" href="#welcome">
+            <span>Scroll to explore</span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <path d="M12 4v16m-6-6 6 6 6-6" />
+            </svg>
+          </a>
+          <button
+            type="button"
+            onClick={toggleVideo}
+            className="film-pause"
+            aria-label={playing ? 'Pause video' : 'Play video'}
+          >
+            {playing ? 'Pause video' : 'Play video'}
+          </button>
+        </div>
+      </section>
+      <section id="welcome" className="relative py-24 px-6 scroll-mt-20">
       <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
         {/* Eyebrow */}
         <p
@@ -124,12 +128,8 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce opacity-40">
-        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </div>
-    </section>
+
+      </section>
+    </>
   );
 }
